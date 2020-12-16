@@ -1,0 +1,84 @@
+.header{
+    width: 1024px;
+    height: 100px;
+    margin: 0 auto;
+}
+.mainContainer{
+    width: 1920px;
+    margin: 0 auto;
+}
+.videoContainer{
+    height: 500px;
+}
+.videoDisplay{
+    float: left;
+    width: 1000px;
+    height: 600px;
+    text-align: center;
+}
+.videoDisplay:after{display:inline-block; height:100%; content:""; vertical-align:middle;}
+#imageDisplay{
+    max-width: 800px;
+    max-height: 500px;
+    vertical-align: middle;
+}
+.cameraControl{
+    float: left;
+    width: 300px;
+}
+.style_msg_block{
+    display: none;
+}
+.recordSetting{
+    clear: both;
+}
+.footer{
+    width: 1024px;
+    height: 100px;
+    margin: 0 auto;
+}
+input[type=button]{
+    min-width: 140px;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+#selectBox_res{
+    margin-bottom: 10px;
+}
+#val_res_01{
+    padding: 5px;
+}
+#val_res_02{
+    padding: 5px;
+}
+#val_frame{
+    padding: 5px;
+}
+#btn_set_record_setting{
+    width: 160px;
+}
+#btn_start_record{
+    display: none;
+}
+#btn_stop_record{
+    display: none;
+}
+#btn_Toggle_record.start{
+    background-color: #000099;
+    color: #eaeaea;
+}
+#btn_Toggle_record.stop{
+    background-color: #990000;
+    color: #eaeaea;
+}
+#btn_flush_Recording{
+    display: none;
+}
+#Status{
+    width: 100%;
+    height: 200px;
+    overflow: auto;
+    border: 1px solid #ababab;
+}

@@ -1,0 +1,332 @@
+/* this file contains the colors for the 'default' theme */
+
+body{
+	background-color: white;
+	color: black;
+}
+a { color: black; }
+
+.mainContainer { background-color: white; }
+
+.header{
+	background-color: black;
+	padding-bottom: 20px;
+	width: 100%;
+	border-radius: 10px;
+}
+
+.heading-bar, .Text-bar, .horizLayout, .progressBar {
+	background: white;
+/*	box-shadow: 0 0 3px 3px inset #3D87CB; /* pantone 2143 */
+	box-shadow: 0 0 3px 3px inset #777; /* pantone 2143 */
+}
+
+.heading-bar {
+	margin-top: 0;
+}
+
+ /* inactive hover color */
+.Text-bar a:hover, .heading-bar a:hover, a:hover {
+	background-color: white;
+	box-shadow: 0 0 4px 4px inset #0067B9; /* pantone 2144 */
+}
+
+ /* active color */
+.Text-bar .active, .heading-bar .active {
+/*	background-color: white; */
+	background-color: #3D87CB; /* pantone 2143 */
+	background-color: #0067B9; /* pantone 2144 */
+/*	background-color: #004EA8; /* pantone 2145 */
+	color: white;
+}
+
+ /* active hover color */
+.Text-bar .active:hover, .heading-bar .active:hover {
+	background-color: #004EA8; /* pantone 2145 */
+}
+
+.progressBarFill { background-color: #3D87CB; /* pantone 2143 */ }
+
+
+ /* border for the video display */
+.videoDisplay {
+	border-color: #0067B9; /* pantone 2144 */
+	background-color: black;
+}
+
+.header, .header a { color: white; }
+
+
+.slider { border-color: black; }
+.slider input[type=range]::-webkit-slider-thumb, .slider::-webkit-slider-thumb,
+.timeline input[type=range]::-webkit-slider-thumb, .timeline::-webkit-slider-thumb {
+	background-color: #0067B9; /* pantone 2144 */
+	border-color: black;
+}
+
+.slider::-moz-range-thumb {
+	background-color: #0067B9; /* pantone 2144 */
+	border-color: black;
+}
+
+ /* drop-down button colors */
+.selectContainerHolder {
+	background-color: #0067B9; /* pantone 2144 */
+	color: white;
+}
+.selectContainerHolder.disabled { background-color: #1a1a1a; }
+
+ /* the drop-down triangle color */
+.selectContainerHolder:after {
+	border-top-color: white;
+}
+
+ /* drop-down list colors */
+.selectContainer a, .selectContainer .downloadListItem {
+	color: white;
+	background-color: #0067B9; /* pantone 2144 */
+}
+
+ /* drop-down list hover color */
+.selectContainer a:hover {
+/*	background-color: #aaa; */
+	background-color: #3D87CB; /* pantone 2143 */
+}
+
+
+ /* menu drop-down colors */
+.menuContainer a {
+	background-color: #0067B9; /* pantone 2144 */
+	color: white;
+}
+
+ /* menu drop-down item list background color */
+.menuContainer a:hover {
+	background-color: #3D87CB; /* pantone 2143 */
+}
+
+input[type="number"]{
+	background-color: white;
+	color: black;
+	box-shadow: 0 0 3px 3px inset #aaa;
+}
+
+ /* when a number is invalid, use this color drop-shadow (outline) */
+input[type=number]:invalid{ box-shadow: 0 0 3px 3px #a00; }
+
+input[type="text"], input[type="password"]{
+	background-color: white;
+	color: black;
+	box-shadow: 0 0 3px 3px inset #aaa;
+}
+
+ /* button in a settings panel */
+.button {
+	background-color: #0067B9; /* pantone 2144 */
+	color: white;
+}
+
+ /* button hover color */
+.button:hover {
+	background-color: #3D87CB; /* pantone 2143 */
+	box-shadow: none;
+}
+
+
+.matchBackground {
+	color: white;
+}
+
+
+.overlayButtons a {
+	background-color: #0067B9; /* pantone 2144 */
+}
+.overlayButtons a:hover {
+	background-color: #3D87CB; /* pantone 2143 */
+}
+
+a.innerDropDown.active {
+	background-color: #004EA8; /* pantone 2145 */
+}
+a.innerDropDown.active:hover {
+	background-color: #3D87CB; /* pantone 2143 */
+}
+.innerDropDownList a, .innerDropDownList .downloadListItem {
+	background-color: #004EA8; /* pantone 2145 */
+}
+
+
+.smallPercentBar { background: #777; }
+.smallPercentBarFill { background: #3D87CB; /* pantone 2143 */ }
+
+
+
+/****** Page specifics *******/
+
+#record.active {
+	background-color: #a00;
+	color: white;
+}
+#record.active:hover { background-color: #800; }
+#record.disabled { background-color: #1a1a1a; }
+
+
+#sensorBackground {
+	background-color: #777;
+	border-color: #777;
+	color: white;
+}
+
+#sensorWindow {
+	background-color: #004EA8; /* pantone 2145 */
+	border-color: #3D87CB; /* pantone 2143 */
+}
+
+#startEndFill {
+	background-color: #0067B9; /* pantone 2144 */
+}
+
+
+
+
+
+
+
+/******** Icons ********/
+
+
+.settingsIcon:after, a:hover .settingsIcon:after {
+	background-color: white;
+}
+
+.battery {
+	border-color: black;
+}
+.battery:before {
+	border-color: black;
+	background-color: black;
+}
+
+#chargeIcon, #chargeIcon:after {
+	border-top-color: black; /* lightning icon triangle color */
+}
+
+
+.recordCircle { /* circle to indicate record button */
+	background-color: #a00;
+}
+.recordSquare { /* square to indicate record button */
+	background-color: black;
+}
+
+
+ /* menu Icon inactive color */
+.menuIcon, .menuIcon:before, .menuIcon:after {
+	background-color: black; /* menu icon center bar */
+}
+
+ /* menu Icon active color */
+.active .menuIcon, .active .menuIcon:before, .active .menuIcon:after{
+	background-color: white;
+}
+
+
+ /* Icon colors (inactive) */
+.homeIcon, .saveIcon, .settingsIcon, .settingsIcon:before, .helpIcon {
+	background-color: black;
+	color: white;
+}
+.playIcon {	border-left-color: black; }
+.homeIcon:after { border-bottom-color: black; }
+.ioIcon, .ioIcon:before, .ioIcon:after { border-color: black; }
+
+
+ /* Icon masking color (inactive) */
+.saveIcon:after { border-top-color: white; }
+.ioIcon, .ioIcon:before, .ioIcon:after { background-color: white; }
+
+ /* Icon masking color (hover) */
+a:hover .saveIcon:after { border-top-color: white; }
+a:hover .ioIcon, a:hover .ioIcon:before, a:hover .ioIcon:after { background-color: white; }
+
+ /* Icon colors (active) */
+.active .homeIcon, .active .saveIcon, .active .settingsIcon, .active .settingsIcon:before { background-color: white; }
+.active .homeIcon:after { border-bottom-color: white; }
+.active .playIcon { border-left-color: white; }
+.active .ioIcon, .active .ioIcon:before, .active .ioIcon:after { border-color: white; }
+
+ /* Icon masking colors (active) */
+.active .saveIcon:after { border-top-color: #0067B9; /* pantone 2144 */ }
+.active .settingsIcon:after, .active .ioIcon, .active .ioIcon:before, .active .ioIcon:after { background-color: #0067B9; /* pantone 2144 */ }
+
+ /* Icon masking colors (active, hover) */
+.active:hover .saveIcon:after { border-top-color: #004EA8; /* pantone 2145 */ }
+.active:hover .settingsIcon:after, .active:hover .ioIcon, .active:hover .ioIcon:before, .active:hover .ioIcon:after { background-color: #004EA8; /* pantone 2145 */ }
+
+
+
+a.innerDropDown:before { /* folder drop-down triangle inside drop-down */
+	border: 7px solid transparent;
+	border-left: 10px solid white;
+}
+a.innerDropDown.active:before {
+	border: 7px solid transparent;
+	border-top: 10px solid white;
+}
+
+
+.ioStatus.true { border-bottom-color: #0067B9; /* pantone 2144 */ }
+.ioStatus.false { border-top-color: #A00; }
+
+.linesIn, .linesIn:before, .linesOut, .andGateIcon:before, .andGateIcon:after {
+	border-top-color: black;
+}
+.linesIn, .linesIn:before, .linesIn:after, .linesOut, .andGateIcon:before {
+	border-bottom-color: black;
+}
+.linesIn:before, .linesIn:after, .linesOut:before, .andGateIcon:after {
+	border-right-color: black;
+}
+.orGateIcon:after, .xorGateIcon:after {
+	border-left-color: black;
+}
+.linesOut:after, .orGateIcon, .orGateIcon:before, .andGateIcon, .xorGateIcon, .xorGateIcon:before {
+	background-color: black;
+}
+
+.andGateIcon:before {
+	background-color: white;
+}
+
+
+
+
+
+
+
+
+
+
+
+ /* reference for the Kron & Chronos colours */
+.colourHolder {
+	/* Kron light blue */
+	color: #3D87CB; /* pantone 2143 */
+
+	/* Kron mid blue */
+	color: #0067B9; /* pantone 2144 */
+
+	/* Kron blue */
+	color: #004EA8; /* pantone 2145 */
+
+	/* Kron gray */
+	color: #9C9687; /* pantone 402 */
+}
+
+
+
+
+
+
+
+

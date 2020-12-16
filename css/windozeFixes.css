@@ -1,0 +1,158 @@
+/*input[type=number], input[type=text] {
+	padding-bottom: 9px;
+} */
+
+.slider, .slider input[type=range] {
+	display: inline-block;
+	width: 256px;
+	height: 38px;
+	border-radius: 0;
+	background: transparent;
+/*	background-image: linear-gradient(to right, black, white); */
+	border: none;
+	margin: -10px 0;
+	padding: 0;
+}
+
+.slider::-ms-thumb { /* slider thumb */
+	background-color: #ddd;
+	border: 3px solid black;
+	width: 6px;
+	height: 25px;
+	border-radius: 10px;
+	cursor: pointer; /* I can't get this to work for some reason */
+}
+
+.slider::-ms-track { /* style the track */
+	width: 250px;
+	height: 6px;
+	border-radius: 8px; 
+/*	background: #333; */
+	background-image: linear-gradient(to right, black, white);
+	border: 3px solid black;
+	margin: 0px;
+	color: transparent; /* remove the tick marks */
+}
+
+::-ms-fill-lower, ::-ms-fill-upper { /* slider track before and after thumb */
+	background: transparent;
+}
+::-ms-ticks-before, ::-ms-ticks-after { /* tick marks */
+	display: none;
+	color: transparent;
+	background: transparent;	
+}
+
+
+.timelineHolder {
+	margin: -84px 0 8px 0;
+}
+
+
+.timeline, .timeline input[type=range] {
+	display: inline-block;
+	box-sizing: border-box;
+	width: 96%;
+	height: 38px;
+	background: transparent;
+	border: none;
+	margin: -20px 2% 0 2%;
+	padding: 0;
+}
+.timeline::-ms-track {
+	display: inline-block;
+	box-sizing: border-box;
+	width: 100%;
+	height: 12px;
+	border-radius: 8px;
+	background: white;
+	border: 3px solid black;
+	margin: 0;
+	color: transparent; /* remove the tick marks */
+}
+.timeline::-ms-thumb {
+	width: 6px;
+	height: 25px;
+	border-radius: 10px;
+	border: 3px solid black;
+	cursor: pointer;
+	background-color: white;
+}
+
+.timelineMarker, .timelineMarker input[type=range] {
+	display: block;
+	width: 100%;
+	height: 30px;
+	border: none;
+	background: transparent;
+	margin: 0;
+	padding: 0;
+}
+.timelineMarker::-ms-track {
+	display: block;
+	width: 100%;
+	height: 0;
+	background: transparent; 
+	margin: 0;
+	border: none; 
+}
+.timelineMarker::-ms-thumb {
+	width: 0px;
+	height: 0px;
+	border-radius: 0;
+	background-color: brown;
+	box-sizing: content-box;
+	border: 20px solid transparent;
+	border-bottom-width: 10px;
+	cursor: pointer;
+	background-color: transparent;
+}
+#startMarker::-ms-thumb {
+	border-right: 0;
+	border-top-color: green;
+	border-left-width: 15px;
+	margin: 0;
+}
+#endMarker::-ms-thumb {
+	box-sizing: border-box;
+	border-left: 0;
+	border-top-color: #a00;
+	border-right-width: 15px;
+	margin: 0;
+}
+#startMarker {
+	margin-top: -20px;
+	margin-bottom: -10px;
+}
+#endMarker {
+	margin-bottom: 22px;
+	padding: 0;
+}
+
+#startEndFill {
+	display: block;
+	height: 16px;
+	margin-top: -61px;
+	margin-bottom: 27px;
+	margin-left: 2%;
+	margin-left: 2%;
+}
+
+#backgroundThing {
+	margin-top: -25px;
+	width: 98%;
+}
+#postTriggerSlider {
+	background-color: transparent;
+	background-image: none;
+}
+#postTriggerSlider::-ms-track { /* style the track */
+	width: 98%;
+	height: 6px;
+	border-radius: 8px; 
+	background-color: #ddd;
+	background-image: none;
+	border: 3px solid black;
+	margin: 0px;
+	color: transparent; /* remove the tick marks */
+}

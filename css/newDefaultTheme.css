@@ -1,0 +1,324 @@
+/* this file contains the colors for the 'default' theme */
+
+
+
+
+:root {
+	--KronBlueLight: #3D87CB; /* pantone 2143 */
+	--KronBlueMid: #0067B9; /* pantone 2144 */
+	--KronBlueDark: #004EA8; /* pantone 2145 */
+	--KronGray: #9C9687; /* pantone 402 */
+
+	--ToolBG: white;
+	--HoverBG: #bbb;
+
+	--TextColor: black;
+	--TextColor2: white;
+	--PageBG: black;
+
+	--DisabledBG: #333;
+
+	--ActiveBG: var(--KronBlueMid);
+	--ActiveHoverBG: var(--KronBlueLight);
+	--ActiveBG2: var(--KronBlueDark);
+}
+
+
+
+body{
+	background-color: var(--PageBG);
+	color: var(--TextColor);
+}
+a { color: var(--TextColor) }
+
+
+
+ /* border for the video display */
+.videoDisplay {
+	border-color: var(--ActiveBG);
+	background-color: black;
+}
+
+
+.heading-bar, .Text-bar, .horizLayout, .settingsIcon:after, .progressBar {
+	background: var(--ToolBG);
+}
+
+ /* inactive hover color */
+.Text-bar a:hover, .heading-bar a:hover, a:hover .settingsIcon:after, a:hover {
+	background-color: var(--HoverBG);
+}
+
+ /* active color */
+.Text-bar .active, .heading-bar .active, .progressBarFill {
+	background-color: var(--ActiveBG);
+	color: var(--TextColor2);
+}
+
+ /* active hover color */
+.Text-bar .active:hover, .heading-bar .active:hover {
+	background-color: var(--ActiveHoverBG);
+}
+
+
+.slider{
+/*	background: #333; */
+	background-image: linear-gradient(to right, black, var(--ActiveBG));
+	background-image: linear-gradient(to right, black, var(--ActiveHoverBG));
+	border-color: var(--PageBG);
+}
+
+.slider input[type=range]::-webkit-slider-thumb, .slider::-webkit-slider-thumb,
+.timeline input[type=range]::-webkit-slider-thumb, .timeline::-webkit-slider-thumb {
+	background-color: var(--ActiveBG);
+	border-color: var(--PageBG);
+}
+.slider::-moz-range-thumb {
+	background-color: var(--ActiveBG);
+	border-color: var(--PageBG);
+}
+
+ /* drop-down button colors */
+.selectContainerHolder {
+	background-color: var(--ActiveBG);
+	color: var(--TextColor2);
+}
+.selectContainerHolder.disabled { background-color: var(--DisabledBG); }
+
+ /* the drop-down triangle color */
+.selectContainerHolder:after {
+	border-top-color: var(--TextColor2);
+}
+
+ /* drop-down list colors */
+.selectContainer a, .selectContainer .downloadListItem {
+	color: var(--TextColor2);
+	background-color: var(--ActiveBG);
+}
+
+ /* drop-down list hover color */
+.selectContainer a:hover {
+/*	background-color: #aaa; */
+	background-color: var(--ActiveHoverBG);
+}
+
+
+ /* menu drop-down colors */
+.menuContainer a {
+	background-color: var(--ActiveBG);
+	color: var(--TextColor2);
+}
+
+ /* menu drop-down item list background color */
+.menuContainer a:hover {
+	background-color: var(--ActiveHoverBG);
+}
+
+input[type="number"]{
+	background-color: var(--PageBG);
+	color: var(--TextColor2);
+/*	box-shadow: 0 0 3px 3px inset #777; */
+}
+
+ /* when a number is invalid, use this color drop-shadow (outline) */
+input[type=number]:invalid{ box-shadow: 0 0 3px 3px #a00; }
+
+input[type="text"], input[type="password"]{
+	background-color: var(--PageBG);
+	color: var(--TextColor2);
+}
+
+ /* button in a settings panel */
+.button {
+	background-color: var(--ActiveBG);
+	color: var(--TextColor2);
+}
+
+ /* button hover color */
+.button:hover {
+	background-color: var(--ActiveHoverBG);
+}
+
+
+.matchBackground {
+	color: --PageBG;
+}
+
+
+.overlayButtons a {
+	background-color: var(--ActiveBG);
+}
+.overlayButtons a:hover {
+	background-color: var(--ActiveHoverBG);
+}
+
+a.innerDropDown.active {
+	background-color: var(--ActiveBG2);
+}
+a.innerDropDown.active:hover {
+	background-color: var(--ActiveHoverBG);
+}
+.innerDropDownList a, .innerDropDownList .downloadListItem {
+	background-color: var(--ActiveBG2);
+}
+
+.smallPercentBar { background: var(--DisabledBG); }
+.smallPercentBarFill { background: var(--ActiveHoverBG); }
+
+
+/****** Page specifics *******/
+
+#record.active {
+	background-color: #a00;
+	color: white;
+}
+#record.active:hover { background-color: #800; }
+#record.disabled { background-color: var(--DisabledBG); }
+
+
+#sensorBackground {
+	background-color: var(--DisabledBG);
+	border-color: var(--DisabledBG);
+	color: var(--TextColor2);
+}
+
+#sensorWindow {
+	background-color: var(--ActiveBG2);
+	border-color: var(--ActiveHoverBG);
+}
+
+#startEndFill {
+	background-color: var(--ActiveBG);
+}
+
+.helpIcon {
+	color: var(--ToolBG);
+}
+
+
+
+
+
+
+/******** Icons ********/
+
+
+.battery {
+	border-color: var(--TextColor);
+}
+.battery:before {
+	border-color: var(--TextColor);
+	background-color: var(--TextColor);
+}
+
+#chargeIcon, #chargeIcon:after {
+	border-top-color: var(--PageBG); /* lightning icon triangle color */
+}
+
+
+.recordCircle { /* circle to indicate record button */
+	background-color: #a00;
+}
+.recordSquare { /* square to indicate record button */
+	background-color: var(--PageBG);
+}
+
+
+ /* menu Icon inactive color */
+.menuIcon, .menuIcon:before, .menuIcon:after {
+	background-color: var(--TextColor);
+}
+
+
+ /* menu Icon active color */
+.active .menuIcon, .active .menuIcon:before, .active .menuIcon:after{
+	background-color: var(--PageBG);
+}
+
+
+ /* Icon colors (inactive) */
+.homeIcon, .saveIcon, .settingsIcon, .settingsIcon:before, .helpIcon {
+	background-color: var(--TextColor);
+}
+.playIcon {	border-left-color: var(--TextColor); }
+.homeIcon:after { border-bottom-color: var(--TextColor); }
+.ioIcon, .ioIcon:before, .ioIcon:after { border-color: var(--TextColor); }
+
+
+ /* Icon masking color (inactive) */
+.saveIcon:after { border-top-color: var(--ToolBG); }
+.ioIcon, .ioIcon:before, .ioIcon:after { background-color: var(--ToolBG); }
+
+ /* Icon masking color (hover) */
+a:hover .saveIcon:after { border-top-color: var(--HoverBG); }
+a:hover .ioIcon, a:hover .ioIcon:before, a:hover .ioIcon:after { background-color: var(--HoverBG); }
+
+
+
+
+ /* Icon colors (active) */
+.active .saveIcon:after { border-top-color: var(--TextColor2); }
+.active .homeIcon { background-color: var(--TextColor2); }
+.active .homeIcon:after { border-bottom-color: var(--TextColor2); }
+.active .playIcon { border-left-color: var(--TextColor2); }
+.active .ioIcon, .active .ioIcon:before, .active .ioIcon:after { border-color: var(--TextColor2); }
+
+ /* Icon masking colors (active) */
+.active .saveIcon { background-color: var(--HoverBG); }
+
+ /* Icon masking colors (active, hover) */
+.active a:hover .saveicon:after { border-top-color: var(--ActiveHoverBG); }
+
+
+
+ /* Icon colors (active) */
+.active .homeIcon, .active .saveIcon, .active .settingsIcon, .active .settingsIcon:before { background-color: var(--TextColor2); }
+.active .homeIcon:after { border-bottom-color: var(--TextColor2); }
+.active .playIcon { border-left-color: var(--TextColor2); }
+.active .ioIcon, .active .ioIcon:before, .active .ioIcon:after { border-color: var(--TextColor2); }
+
+ /* Icon masking colors (active) */
+.active .saveIcon:after { border-top-color: var(--HoverBG); }
+.active .settingsIcon:after, .active .ioIcon, .active .ioIcon:before, .active .ioIcon:after { background-color: var(--ActiveBG); }
+
+ /* Icon masking colors (active, hover) */
+.active:hover .saveIcon:after { border-top-color: var(--ActiveHoverBG); }
+.active:hover .settingsIcon:after, .active:hover .ioIcon, .active:hover .ioIcon:before, .active:hover .ioIcon:after { background-color: var(--ActiveHoverBG); }
+
+
+a.innerDropDown:before { /* folder drop-down triangle inside drop-down */
+	border: 7px solid transparent;
+	border-left: 10px solid var(--TextColor2);
+}
+a.innerDropDown.active:before {
+	border: 7px solid transparent;
+	border-top: 10px solid var(--TextColor2);
+}
+
+
+.ioStatus.true { border-bottom-color: var(--ActiveBG); }
+.ioStatus.false { border-top-color: #A00; }
+
+
+.linesIn, .linesIn:before, .linesOut, .andGateIcon:before, .andGateIcon:after {
+	border-top-color: var(--TextColor);
+}
+.linesIn, .linesIn:before, .linesIn:after, .linesOut, .andGateIcon:before {
+	border-bottom-color: var(--TextColor);
+}
+.linesIn:before, .linesIn:after, .linesOut:before, .andGateIcon:after {
+	border-right-color: var(--TextColor);
+}
+.orGateIcon:after, .xorGateIcon:after {
+	border-left-color: var(--TextColor);
+}
+.linesOut:after, .orGateIcon, .orGateIcon:before, .andGateIcon, .xorGateIcon, .xorGateIcon:before {
+	background-color: var(--TextColor);
+}
+
+.andGateIcon:before {
+	background-color: var(--ToolBG);
+}
+
+
+
