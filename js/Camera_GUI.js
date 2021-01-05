@@ -78,14 +78,14 @@ $(function() {
                     if(type == "toggle"){
                         $("#btn_toggle_record").removeClass("start");
                         $("#btn_toggle_record").addClass("stop");
-                        $("#btn_toggle_record").val("Stop Record");
+                        $("#btn_toggle_record").val("Recording");
                     }
                 },
                 error: function(error){
-                    
+                    alert("Error: Can't start recording.");
                 },
                 complete: function(data){
-
+                    console.log("Complete starting recording.");
                 },
                 timeout: 10000});   
         }
@@ -102,58 +102,17 @@ $(function() {
                     if(type == "toggle"){
                         $("#btn_toggle_record").removeClass("stop");
                         $("#btn_toggle_record").addClass("start");
-                        $("#btn_toggle_record").val("Start Record");
+                        $("#btn_toggle_record").val("Record");
                     }
                 },
                 error: function(error){
-                    
+                    alert("Error: Can't stop recording.");
                 },
                 complete: function(data){
-
+                    console.log("Complete stopping recording.");
                 },
                 timeout: 10000});
         }
-    }
-
-    function startFilesave(){
-        //var option = {filename:"", device: "nfs", format: "dng"}
-        var option = {filename:"", device: "smb", format: "dng"}
-        
-        $.ajax({
-            url:camera_inet_addr+"/control/startFilesave",
-            data:JSON.stringify(option),
-            method:"POST",
-            contentType: "application/json",
-            success: function(data){
-                
-            },
-            error: function(error){
-                
-            },
-            complete: function(data){
-
-            },
-            timeout: 10000
-        }); 
-    }
-
-    function stopFilesave(){
-        
-        $.ajax({
-            url:camera_inet_addr+"/control/stopFilesave",
-            data:{},
-            method:"POST",
-            success: function(data){
-                
-            },
-            error: function(error){
-                
-            },
-            complete: function(data){
-
-            },
-            timeout: 10000
-        });
     }
 
     function getParameters(){
@@ -169,19 +128,21 @@ $(function() {
     }
 
     function getResolution(){
+        for (i = 0; i < ipArray.length; i++)
+        {
+            $.ajax({
+                url:ipArray[i]+"/control/get",
+                data:{"resolution":""},
+                method:"GET",
+                timeout: 10000})
+                .done(function(data){
 
-        $.ajax({
-            url:camera_inet_addr+"/control/get",
-            data:{"resolution":""},
-            method:"GET",
-            timeout: 10000})
-            .done(function(data){
-
-                $("#hRes").val(data.resolution.hRes);
-                $("#vRes").val(data.resolution.vRes);
-                $("#fps").val(parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2));
-                
-            });       
+                    $("#hRes").val(data.resolution.hRes);
+                    $("#vRes").val(data.resolution.vRes);
+                    $("#fps").val(parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2));
+                    
+                });
+        }       
     }
 
     var initializeSetting = {
@@ -263,15 +224,6 @@ $(function() {
 							[336, 96, 0],
 						] ;
 
-
-    var triggerSettings = {
-        "ioThresholdIo1": 2.0,
-        "ioMappingTrigger": {
-            "source": "io1",
-            "debounce": false,
-            "invert": false}
-    }
-
     function initRes_SelectBox(){
         $("#selectBox_res").append("<option>Choose....</option>");
         for(var i in resolutionPresets){
@@ -308,30 +260,28 @@ $(function() {
         if($("#hRes").val()){
             init_resolution.resolution.hRes = parseInt($("#hRes").val());
         }else{
-            //alert("해상도를 선택하세요.");
+            alert("Please select a resolution.");
             return;
         }
 
         if($("#vRes").val()){
             init_resolution.resolution.vRes = parseInt($("#vRes").val());
         }else{
-            //alert("해상도를 선택하세요.");
+            alert("Please select a resolution.");
             return;
         }
 
         if($("#fps").val()){
-            //init_resolution.framePeriod = parseInt($("#fps").attr("data-minFramePeriod"));
             init_resolution.framePeriod = parseInt(1000000000/parseInt($("#fps").val()));
         }else{
-            //alert("해상도를 선택하세요.");
+            alert("Please input a frame rate value.");
             return;
         }
         init_resolution.resolution.hOffset = parseInt($("#hRes").attr("data-hOff_max"));
         init_resolution.resolution.vOffset = parseInt($("#vRes").attr("data-vOff_max"));
 
         init_resolution.resolution.minFrameTime = parseFloat($("#fps").attr("data-minFramePeriod"));
-        //console.log(init_resolution);
-        //return;
+        
         for (i = 0; i < ipArray.length; i++)
         {
             $.ajax({
@@ -350,56 +300,28 @@ $(function() {
         }
     }
 
-    function setTriggerSttings(){
-        
-        $.ajax({
-            url:camera_inet_addr+"/control/set",
-            data:JSON.stringify(initializeSetting),
-            method:"POST",
-            contentType: "application/json",
-            success: function(data){
-                
-            },
-            error: function(error){
-                
-            },
-            timeout: 10000
-        });
-    }
-
     function rebootCamera(){
-
-        $.ajax({
-            url:camera_inet_addr+"/control/reboot",
-            data:{"power":1},
-            method:"GET",
-            contentType: "application/json",
-            success: function(data){
-                
-            },
-            error: function(error){
-                
-            },
-            timeout: 10000
-        });
-    }
-
-    function flushRecording(){
-
-        $.ajax({
-            url:camera_inet_addr+"/control/flushRecording",
-            data:{},
-            method:"GET",
-            contentType: "application/json"})
-            .done(function(data){
-                
+        for (i = 0; i < ipArray.length; i++){
+            $.ajax({
+                url:ipArray[i]+"/control/reboot",
+                data:{"power":1},
+                method:"GET",
+                contentType: "application/json",
+                success: function(data){
+                    
+                },
+                error: function(error){
+                    
+                },
+                timeout: 10000
             });
+        }
     }
-
-    
 
     function updateScreen(){
-        $("#imageDisplay").attr("src", camera_inet_addr+"/cgi-bin/screenCap?" + Math.random());
+        for (i = 0; i < ipArray.length; i++){
+            $("#imageDisplay").attr("src", ipArray[i]+"/cgi-bin/screenCap?" + Math.random());
+        }
     }
 
     
@@ -409,49 +331,28 @@ $(function() {
         $("#Status").append(today.toLocaleString()+" : "+msg+"<br/>");
     }
 
+    /* Add new functions */
 
-    $("#btn_start_record").on("click", function(){
-        startRecording();
-    });
 
-    $("#btn_stop_record").on("click", function(){
-        stopRecording();
-    });
-
+    /* Old functions Usage */
     $("#btn_toggle_record").on("click", function(){
 
         var obj_btn = $(this);
 
         if(obj_btn.hasClass("start")){
+            console.log("Start");
             startRecording("toggle");
         }else if(obj_btn.hasClass("stop")){
             stopRecording("toggle");
         }
     });
 
-    $("#btn_start_file_save").on("click", function(){
-        startFilesave();
-    });
-
-    $("#btn_stop_file_save").on("click", function(){
-        stopFilesave();
-    });
-
-    $("#btn_set_record_setting").on("click", function(){
+    $("#applyButton").on("click", function(){
         setResFrameRate();
     });
-    
-    $("#btn_set_trigger_setting").on("click", function(){
-        //setFrameRate();
-        setTriggerSttings();
-    });
 
-    $("#btn_reboot").on("click", function(){
+    $("#rebootBtn").on("click", function(){
         rebootCamera();
-    });
-
-    $("#btn_flush_Recording").on("click", function(){
-        flushRecording();
     });
 
     $("#selectBox_res").on("change", function(){

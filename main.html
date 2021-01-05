@@ -115,8 +115,6 @@
 
         <div class="heading-bar">
             <a  id="main" class="active"> <div class="homeIcon"></div> Main </a>
-            <a id="playSave" href="PlaySave.html"> <div class="playIcon"></div> Play & Save </a>
-            <a id="settings" href="settings.html"> <div class="settingsIcon"></div> Settings </a>
         </div>
 
         <div class="leftContainer">
@@ -131,13 +129,17 @@
             </div>
 
             <div class="Text-bar">
-                <input type="button" id="btn_reboot" class="bnt_reboot" value="Reboot"/>
-                <input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Start Record"/>
+                <a id="rebootBtn" class=""> Reboot </a>
+                <a id="btn_toggle_record" class=" btn_Toggle_Record start"><div class="recordCircle"></div> Record </a>
+                <input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Record"/>
             </div>
-            <div class="tabSection">
-                <div class="tabSelection">
-                </div>
-
+            <div id="ipBox" class="Text-bar">
+                <textarea id="ip_address_area" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
+                <p id="ip_list"></p>
+                <br>
+                <button type="button" id="btn_ip_confirm">Confirm</button>
+                <button type="button" id="btn_ip_clear">Clear</button>
+                
             </div>
         </div>
 
@@ -169,7 +171,7 @@
                 <br>
                 <b> Offset </b>
                 <br>
-                <input type="number" id="hOff" min="0" max="1088" step="8"> x <input type="number" id="vOff" min="0" max="928" step="2">
+                <input type="number" id="hOff" min="0" max="1088" step="8"/> x <input type="number" id="vOff" min="0" max="928" step="2"/>
                 &ensp;
                 <a id="centerWindow" class="button"> Center </a>
                 <br>
@@ -182,6 +184,23 @@
             </div>
 
             <div id="saveAsBox" class="horizLayout">
+                <b> Windows/SMB Net. Storage </b>
+                <br>
+                Address: <input id="smbAddress" type="text" placeholder="123.45.67.89"/>
+                <br>
+                Mount:&emsp;<input id="smbMount" type="text" placeholder="shareFolder"/>
+                <br>
+                Username:&puncsp;<input id="smbUName" type="text" placeholder="squidFace"/>
+                <br>
+                <a id="smbPassShowHide" class="button" style="margin-left: 0;">Password:</a>
+                <input id="password" type="text" placeholder="******"/>
+                <br>
+                <span class="instruction">Warning: this info is not encrypted!</span>
+                <br>
+                <a id="smbUnmountBtn" class="button">Unmount</a>
+                <a id="smbTestBtn" class="button">Test</a>
+                <a id="smbApplyBtn" class="button" style="float: right;">Apply</a>
+                <br>
                 <b> Save Video </b>
                 <br>
                 <div id="saveFormat" class="selectContainerHolder" onclick=""> File Format<div id="saveFormatInner" class="selectContainer">
@@ -192,33 +211,35 @@
                 </div></div>
                 <a id="saveVideoButton" class="button disabled" onclick="saveWholeVideo()"> Save </a>
             </div>
-
-            <input type="button" id="btn_start_file_save" class="btn_file_save" value="Start File Save"/>
-            <input type="button" id="btn_stop_file_save" class="btn_stop_file_save" value="Stop File Save"/>
-            <input type="button" id="btn_set_trigger_setting" value="Ext Trigger Setup"/><br/>
-            <span style="display: block; margin: 5px 0px; font-weight: bold;">Resolution</span>
-            <select id="selectBox_res"></select><br/>
-            <span style="display: block; margin: 5px 0px; font-weight: bold;">Framerate</span><input type="input" id="val_frame" style="width: 80px;"/> FPS<br/><br/>
-            <input type="button" id="btn_set_record_setting" value="Set Resolution Setup"/><br/>
         </div>
 
+        <div id="mDiv3">
+            <p>1</p> <button onclick="myFun9()">添加</button>
+        </div>
+        <button onclick="myFun10()">删除</button>
+        <div id="mDiv4">
+        <p id="p1">1</p>
+        <p id="p2">2</p>
+        <p id="p3">3</p>
+        <p id="p4">4</p>
+        <p id="p5">5</p>
         </div>
 
-        <div id="recordSetting">
-            <div id="resolutionBox" class=""></div>
-        </div>
-
-        <div class="footer"></div>
-    
-        <div>
-            <textarea id="ip_address_area" style="width: 1000px; height: 300px;" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
-            <button type="button" id="btn_ip_confirm">Confirm</button>
-            <button type="button" id="btn_ip_clear">Clear</button>
-            <p id="ip_list"></p>
-        </div>
-
-        <!--<div id="Status"></div>-->
+        <script>
+        function myFun9(){
+            var mDiv3 = document.getElementById("mDiv3"); //获取组件1
+            var eleme = document.createElement("p"); //创建组件2
+            var ele_content = document.createTextNode("2");//创建节点内容
+            eleme.appendChild(ele_content); // 组件添加节点
+            mDiv3.appendChild(eleme); //组件2加入组件1
+        }
+        function myFun10(){
+            var parent=document.getElementById("mDiv4");
+            var son=document.getElementById("p1");
+            parent.removeChild(son);
+        }
+        </script>
+        
     </div>
-
 </body>
 </html>
