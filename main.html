@@ -10,7 +10,7 @@
 <link id="windozeFixer" rel="styleSheet" href="">
 
 <script type="text/javascript" src="js/jquery-3.5.1.min.js"></script>
-<script type="text/javascript" src="js/Camera_GUI.js"></script>
+<script type="text/javascript" src="js/multi_control.js"></script>
 
 <!--<link rel="styleSheet" href="css/Camera_GUI.css">-->
 <style>
@@ -41,6 +41,16 @@
 #imageDisplay { line-height: 430px; }
 
 #fps { width: 105px; }
+
+#ip_address_area {
+    width: 50%;
+    height: 200px;
+    border-radius: 10px;
+
+    background-color: black;
+    color: white;
+    border: 0px;
+}
 
 
 @media screen and (min-width: 1737px) {
@@ -131,15 +141,19 @@
             <div class="Text-bar">
                 <a id="rebootBtn" class=""> Reboot </a>
                 <a id="btn_toggle_record" class=" btn_Toggle_Record start"><div class="recordCircle"></div> Record </a>
-                <input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Record"/>
+                <!--<input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Record"/>-->
             </div>
             <div id="ipBox" class="Text-bar">
-                <textarea id="ip_address_area" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
-                <p id="ip_list"></p>
-                <br>
-                <button type="button" id="btn_ip_confirm">Confirm</button>
-                <button type="button" id="btn_ip_clear">Clear</button>
-                
+                <div id="ip_display" style="display: flex;">
+                    <textarea id="ip_address_area" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
+                    <div id="j-selected-employee">
+                        <p id="ip_list"></p>
+                    </div>
+                </div>
+                <div id="ip_button" style="padding-bottom: 70px;">
+                    <a id="ipConfirmButton" class="button"> Confirm </a>
+                    <a id="ipClearButton" class="button"> Clear </a>
+                </div>
             </div>
         </div>
 
@@ -214,24 +228,29 @@
         </div>
 
         <div id="mDiv3">
-            <p>1</p> <button onclick="myFun9()">添加</button>
+            <p>1</p> 
+            <button onclick="myFun9()">添加</button>
         </div>
         <button onclick="myFun10()">删除</button>
         <div id="mDiv4">
-        <p id="p1">1</p>
-        <p id="p2">2</p>
-        <p id="p3">3</p>
-        <p id="p4">4</p>
-        <p id="p5">5</p>
+            <p id="p1">1</p>
+            <p id="p2">2</p>
+            <p id="p3">3</p>
+            <p id="p4">4</p>
+            <p id="p5">5</p>
         </div>
 
         <script>
         function myFun9(){
+            var arr = [2,3,4,5];
             var mDiv3 = document.getElementById("mDiv3"); //获取组件1
-            var eleme = document.createElement("p"); //创建组件2
-            var ele_content = document.createTextNode("2");//创建节点内容
-            eleme.appendChild(ele_content); // 组件添加节点
-            mDiv3.appendChild(eleme); //组件2加入组件1
+            for (var i = 0; i < arr.length; i++ )
+            {
+                var eleme = document.createElement("p"); //创建组件2
+                var ele_content = document.createTextNode(arr[i]);//创建节点内容
+                eleme.appendChild(ele_content); // 组件添加节点
+                mDiv3.appendChild(eleme); //组件2加入组件1
+            }
         }
         function myFun10(){
             var parent=document.getElementById("mDiv4");

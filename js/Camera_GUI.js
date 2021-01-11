@@ -18,15 +18,49 @@ $(function() {
 
     function getIpAddress(){
         var ipList = document.getElementById("ip_address_area").value;
-        var ipDisplay = "";
+        var ipDisplay = "The List of IP Address:<br>";
         ipArray = ipList.split(",");
+        /*
+        ipArray.forEach( function(item, index){
+            $(".ip_list").append('<li class="">' + 
+                                 '<span class="mcs-courseTagList__text" data-id="'+item.id+'">'+item.ename+'</span>' + 
+                                 '<a href="javascript:;" class="mcs-courseTagList__close  j-close"><i class="ico-close"></i></a></li>');
+        });
 
+        $('.j-selected-employee').show(function(){
+            $(".ip_list li").each(function(){
+                var top = $(this).position().top;
+                if(top>0){
+                    $(this).addClass('other-row');//非第一行标注other-row
+                }
+            })
+            if($('.other-row').length!==0){
+                $('.j-selected-employee').append('<a href="javascript:;" class="more-btn j-more"><span>More</span> <i class="arrow arrow-down"></i></a>');
+            }
+            $('.ip_list .other-row').hide();
+        });
+        */
         for (i = 0; i < ipArray.length; i++)
         {
             ipDisplay += ipArray[i] + "<br>";
         }
         document.getElementById("ip_list").innerHTML = ipDisplay;
+        
     }
+
+    //Extend
+    $('body').on('click','.j-more',function () {
+        $(this).parent().find('.other-row').show();
+        $(this).after('<a href="javascript:;" class="more-btn j-fold"><span>收起</span> <i class="arrow arrow-up"></i></a>');
+        $(this).remove();
+        
+    });
+    //Fold
+    $('body').on('click','.j-fold',function () {
+        $(this).parent().find('.other-row').hide();
+        $(this).after('<a href="javascript:;" class="more-btn j-more"><span>更多</span> <i class="arrow arrow-down"></i></a>');
+        $(this).remove();
+    })
 
     function clearIpAddress(){
         document.getElementById("ip_address_area").value='';
@@ -128,21 +162,18 @@ $(function() {
     }
 
     function getResolution(){
-        for (i = 0; i < ipArray.length; i++)
-        {
-            $.ajax({
-                url:ipArray[i]+"/control/get",
-                data:{"resolution":""},
-                method:"GET",
-                timeout: 10000})
-                .done(function(data){
+        $.ajax({
+            url:camera_inet_addr+"/control/get",
+            data:{"resolution":""},
+            method:"GET",
+            timeout: 10000})
+            .done(function(data){
 
-                    $("#hRes").val(data.resolution.hRes);
-                    $("#vRes").val(data.resolution.vRes);
-                    $("#fps").val(parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2));
-                    
-                });
-        }       
+                $("#hRes").val(data.resolution.hRes);
+                $("#vRes").val(data.resolution.vRes);
+                $("#fps").val(parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2));
+                
+            });    
     }
 
     var initializeSetting = {
@@ -319,9 +350,8 @@ $(function() {
     }
 
     function updateScreen(){
-        for (i = 0; i < ipArray.length; i++){
-            $("#imageDisplay").attr("src", ipArray[i]+"/cgi-bin/screenCap?" + Math.random());
-        }
+        $("#imageDisplay").attr("src", camera_inet_addr+"/cgi-bin/screenCap?" + Math.random());
+        
     }
 
     
@@ -332,6 +362,78 @@ $(function() {
     }
 
     /* Add new functions */
+    // Exposure(Shutter)
+    var exposureValue = document.getElementById("shutter").value;
+    var exposureMin = 1000;
+    var exposureMax = 2000;
+    var framePeriod = 3000;
+    var resFRSettingsOnCam = [];
+
+    function holdWhileSliding(element) {
+
+        if (typeof holdWhileSliding.requestCount == 'undefined')
+            holdWhileSliding.requestCount = 0 ;
+    
+        exposureValue = Math.pow( ((element.value - exposureMin) / (exposureMax - exposureMin)), 2 ) * exposureMax ;
+    
+        var notTooOften = function() {
+            holdWhileSliding.requestCount -= 1 ;
+        }
+    
+        if (holdWhileSliding.requestCount < 1) {
+            holdWhileSliding.requestCount += 1 ;
+            dataRequester ("set", '{"exposurePeriod":' + parseInt(exposureValue) + '}', notTooOften) ;
+        }
+    
+    }
+
+    function changeExposureOften(element) {
+        boundInput(element) ;
+    
+        if (typeof changeExposureOften.requestCount == 'undefined')
+            changeExposureOften.requestCount = 0 ;
+    
+    
+        var whenFinished = function() {
+            changeExposureOften.requestCount -= 1 ;
+        }
+    
+        var sendParams = "" ;
+    
+        switch (element.id) {
+            case "exposurePercent":
+                sendParams = '{"exposurePercent":' + parseFloat(element.value) + '}' ;
+                break ;
+    
+            case "exposureDegrees":
+                sendParams = '{"shutterAngle":' + parseFloat(element.value) + '}' ;
+                break ;
+    
+            case "exposureTime":
+                sendParams = '{"exposurePeriod":' + parseInt(element.value * 1000) + '}' ;
+                break ;
+        }
+    
+        if ( (sendParams != "") && (changeExposureOften.requestCount < 1) ) {
+            changeExposureOften.requestCount += 1 ;
+            dataRequester ("set", sendParams, whenFinished) ;
+        }
+    }
+
+    $("#shutter").on("input", function(){
+        holdWhileSliding($("#shutter"));
+    });
+
+    $("#exposureDegrees").on("input", function(){
+        changeExposureOften(this);
+    });
+    $("#exposurePercent").on("input", function(){
+        changeExposureOften(this);
+    });
+    $("#exposureTime").on("input", function(){
+        changeExposureOften(this);
+    });
+    
 
 
     /* Old functions Usage */
@@ -384,11 +486,11 @@ $(function() {
 
     });
 
-    $("#btn_ip_confirm").on("click", function(){
+    $("#ipConfirmButton").on("click", function(){
         getIpAddress();
     });
 
-    $("#btn_ip_clear").on("click", function(){
+    $("#ipClearButton").on("click", function(){
         clearIpAddress();
     });
 
