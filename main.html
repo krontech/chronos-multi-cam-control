@@ -197,7 +197,7 @@
                 <a id="applyButton" class="button"> Apply </a>
             </div>
 
-            <div id="saveAsBox" class="horizLayout">
+            <div id="smbStorageBox" class="horizLayout">
                 <b> Windows/SMB Net. Storage </b>
                 <br>
                 Address: <input id="smbAddress" type="text" placeholder="123.45.67.89"/>
@@ -207,31 +207,56 @@
                 Username:&puncsp;<input id="smbUName" type="text" placeholder="squidFace"/>
                 <br>
                 <a id="smbPassShowHide" class="button" style="margin-left: 0;">Password:</a>
-                <input id="password" type="text" placeholder="******"/>
+                <input id="smbPass" type="password" placeholder="******"/>
                 <br>
                 <span class="instruction">Warning: this info is not encrypted!</span>
                 <br>
                 <a id="smbUnmountBtn" class="button">Unmount</a>
                 <a id="smbTestBtn" class="button">Test</a>
                 <a id="smbApplyBtn" class="button" style="float: right;">Apply</a>
-                <br>
+            </div>
+
+            <div id="saveAsBox" class="horizLayout">
                 <b> Save Video </b>
                 <br>
+                <div id="storageLocation" class="selectContainerHolder" onclick="">Location<div id="storageLocationInner" class="selectContainer">
+                    <a> No Storage Connected </a>
+                    <a id="refreshdropdown">Refresh</a>
+                </div></div>
+                <br><br>
+                <input type="text" id="fileName" placeholder="File Name">
+                <br>
+                <span class="instruction">Leave empty to use autoname</span>
+                <br><br>
+                <br>
                 <div id="saveFormat" class="selectContainerHolder" onclick=""> File Format<div id="saveFormatInner" class="selectContainer">
-                    <a onclick="dropDownSelect(this)">H.264 (mp4)</a>
-                    <a onclick="dropDownSelect(this)">CinemaDNG (raw)</a>
-                    <a onclick="dropDownSelect(this)">TIFF (images)</a>
-                    <a onclick="dropDownSelect(this)">TIFF RAW (images)</a>
+                    <a id="h264">H.264 (mp4)</a>
+                    <a id="cinemaDNG">CinemaDNG (raw)</a>
+                    <a id="tiff">TIFF (images)</a>
+                    <a id="tiffRaw">TIFF RAW (images)</a>
                 </div></div>
                 <a id="saveVideoButton" class="button disabled" onclick="saveWholeVideo()"> Save </a>
+                <br>
+                <div id="popUpBackground" class="popUpBackground hidden">
+                    <div id="messageWarn" class="popUpMessage">
+                        <div id="netShareResultBox" class="horizLayout hidden">
+                            Status of the network share requests
+                            <br>
+                            <a id="ok" style="float: right;" class="button">Ok</a>
+                        </div>
+                        <div id="somethingWeirdBox" class="horizLayout hidden">
+                            Something weird is happening
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="mDiv3">
             <p>1</p> 
-            <button onclick="myFun9()">添加</button>
+            <button onclick="myFun9()">Add</button>
         </div>
-        <button onclick="myFun10()">删除</button>
+        <button onclick="myFun10()">Delete</button>
         <div id="mDiv4">
             <p id="p1">1</p>
             <p id="p2">2</p>
@@ -242,15 +267,12 @@
 
         <script>
         function myFun9(){
-            var arr = [2,3,4,5];
             var mDiv3 = document.getElementById("mDiv3"); //获取组件1
-            for (var i = 0; i < arr.length; i++ )
-            {
-                var eleme = document.createElement("p"); //创建组件2
-                var ele_content = document.createTextNode(arr[i]);//创建节点内容
-                eleme.appendChild(ele_content); // 组件添加节点
-                mDiv3.appendChild(eleme); //组件2加入组件1
-            }
+            var eleme = document.createElement("p"); //创建组件2
+            var ele_content = document.createTextNode("2");//创建节点内容
+            eleme.appendChild(ele_content); // 组件添加节点
+            mDiv3.appendChild(eleme); //组件2加入组件1
+            
         }
         function myFun10(){
             var parent=document.getElementById("mDiv4");
