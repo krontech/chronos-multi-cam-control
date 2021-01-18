@@ -169,6 +169,7 @@
                 <input type="number" id="exposureTime" min="0" step="0.01"> µs
                 <a id="maxShutterButton" class="button"> MAX </a>
             </div>
+            
 
             <div id="resolutionBox" class="horizLayout">
                 <b> Resolution </b> &ensp;
@@ -177,18 +178,7 @@
                 </div></div>
                 <br>
                 <input type="number" id="hRes"/> x <input type="number" id="vRes"/>
-                <br>
-                <div id="sensorBackground">
-                    <div id="sensorCoverageText" class="coverageText">Sensor Coverage</div>
-                    <div id="sensorWindow"></div>
-                </div>
-                <br>
-                <b> Offset </b>
-                <br>
-                <input type="number" id="hOff" min="0" max="1088" step="8"/> x <input type="number" id="vOff" min="0" max="928" step="2"/>
-                &ensp;
                 <a id="centerWindow" class="button"> Center </a>
-                <br>
                 <br>
                 <b> Frame Rate </b>
                 <br>
@@ -196,6 +186,7 @@
                 <a id="maxFRButton" class="button"> MAX </a>
                 <a id="applyButton" class="button"> Apply </a>
             </div>
+            <br>
 
             <div id="smbStorageBox" class="horizLayout">
                 <b> Windows/SMB Net. Storage </b>
@@ -235,7 +226,7 @@
                     <a id="tiff">TIFF (images)</a>
                     <a id="tiffRaw">TIFF RAW (images)</a>
                 </div></div>
-                <a id="saveVideoButton" class="button disabled" onclick="saveWholeVideo()"> Save </a>
+                <a id="saveVideoButton" class="button disabled"> Save </a>
                 <br>
                 <div id="popUpBackground" class="popUpBackground hidden">
                     <div id="messageWarn" class="popUpMessage">

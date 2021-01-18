@@ -1,21 +1,21 @@
 $(function() {
 
-    var camera_inet_addr = "http://192.168.12.1";
-    var ipArray;
-    var i;
+    var i; // index for loop among all cameras
+    var ipArray; // array to store all ip addresses
+    var first_camera_addr = ""; // first address in the ip list for display
 
     // Input IP addresses
     function getIpAddress(){
         var ipList = document.getElementById("ip_address_area").value;
         var ipDisplay = "The List of IP Address:<br>";
         ipArray = ipList.split(",");
+        first_camera_addr = ipArray[0];
  
         for (i = 0; i < ipArray.length; i++)
         {
             ipDisplay += ipArray[i] + "<br>";
         }
         document.getElementById("ip_list").innerHTML = ipDisplay;
-        
     }
 
     // Clear textarea
@@ -75,24 +75,25 @@ $(function() {
     }
 
     /* Get settings from the first camera in the IP list */
+    // Resolution Box
     function getResolution(){
         $.ajax({
-            url:camera_inet_addr+"/control/get",
-            data:{"resolution":""},
+            url:first_camera_addr+"/control/get",
+            data:{"resolution":"",},
             method:"GET",
             timeout: 10000})
             .done(function(data){
                 $("#hRes").val(data.resolution.hRes);
                 $("#vRes").val(data.resolution.vRes);
                 $("#fps").val(parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2));
-                $("#hOff").val(data.resolution.hOffset);
-                $("#vOff").val(data.resolution.vOffset);
+                //$("#hOff").val(data.resolution.hOffset);
+                //$("#vOff").val(data.resolution.vOffset);
             });    
     }
-
+    // Exposure Box
     function getExposure(){
         $.ajax({
-            url:camera_inet_addr+"/control/get",
+            url:first_camera_addr+"/control/get",
             data:{"exposurePeriod":"",
                   "exposurePercent":"",
                   "shutterAngle":"",
@@ -106,8 +107,7 @@ $(function() {
                 $("#exposureTime").val(parseFloat(data.exposurePeriod / 1000).toFixed(1));
                 $("#exposurePercent").val(data.exposurePercent.toFixed(1));
                 $("#exposureDegrees").val(data.shutterAngle.toFixed(1));
-
-                // SHutter Display
+                // Shutter Display
                 document.getElementById("shutter").min = data.exposureMin;
                 document.getElementById("shutter").max = data.exposureMax;
                 var value = Math.sqrt(data.exposurePeriod / data.exposureMax) * data.exposureMax;
@@ -115,6 +115,8 @@ $(function() {
             });
     }
 
+    /* Set parameters from webpage to all cameras on the IP list */
+    // initial resolution parameters
     var init_resolution = {
         "framePeriod": 100000,
         "resolution": {
@@ -127,11 +129,59 @@ $(function() {
             vRes: 480,
         }
     }
+    // Resolution Presets
+    var resolutionPresets = [	[1920, 1200, 0],
+                                [1920, 1080, 0],
+                                [1680, 1050, 0],
+                                [1400, 1050, 0],
 
-    /* Set parameters from webpage to all cameras on the IP list */
-    // Resolution & frame rate
+                                [1280, 1024, 0],
+                                [1280, 720, 0],
+                                [1280, 512, 0],
+                                [1280, 360, 0],
+                                [1280, 240, 0],
+                                [1280, 120, 0],
+                                [1280, 96, 0],
+                                [1024, 768, 0],
+                                [1024, 576, 0],
+                                [800, 600, 0],
+                                [800, 480, 0],
+                                [640, 480, 0],
+                                [640, 360, 0],
+                                [640, 240, 0],
+                                [640, 120, 0],
+                                [640, 96, 0],
+                                [336, 240, 0],
+                                [336, 120, 0],
+                                [336, 96, 0],
+                            ];
+    var counter = 0;
+    function findFrameRates() {
+        if (counter < resolutionPresets.length)
+        {
+            $.ajax({
+                url:first_camera_addr+"/control/get",
+                data:{"minFramePeriod":"",
+                      "error":"",},
+                method:"GET",
+                timeout: 10000})
+                .done(function(data){
+                    if (data.minFramePeriod != "")
+                    {
+                        resolutionPresets[counter][2] = data.minFramePeriod;
+                        counter++;
+                    }
+                    else if (data.error != "")
+                    {
+                        resolutionPresets.splice(counter, 1);
+                    }
+                    findFrameRates();
+                    
+                });
+        }
+    }
+    // Resolution & Frame Rate
     function setResFrameRate(){
-
         if($("#hRes").val()){
             init_resolution.resolution.hRes = parseInt($("#hRes").val());
         }else{
@@ -168,7 +218,21 @@ $(function() {
             });
         }
     }
-
+    // Set Frame Rate to its max value
+    function getMaxFrameRate() {
+        $.ajax({
+            url:first_camera_addr+"/control/get",
+            data:{"minFramePeriod":""},
+            method:"GET",
+            timeout: 10000})
+            .done(function(data){
+                console.log(data);
+                var fpsBox = document.getElementById("fps") ;
+                fpsBox.value = parseFloat(1000000000 / parseFloat(data.minFramePeriod)).toFixed(2) ;;
+                fpsBox.max = fpsBox.value ;
+            });
+    }
+    // Exposure
     function setExposure(obj){
         // Fix values with their limits
         boundInput(obj);       
@@ -198,36 +262,6 @@ $(function() {
             });
         }
     }
-
-    // Set Exposure to its max value
-    function maxShutter(){
-        var sendParams = '{"exposurePercent":' + parseFloat(100) + '}';
-        for (i = 0; i < ipArray.length; i++)
-        {
-            $.ajax({
-                url: ipArray[i]+"/control/set",
-                data: sendParams,
-                method: "POST",
-                contentType: "application/json",
-                timeout: 10000
-            });
-        }
-    }
-
-    // Set Frame Rate to its max value
-    function getMaxFrameRate() {
-        $.ajax({
-            url:camera_inet_addr+"/control/get",
-            data:{"minFramePeriod":""},
-            method:"GET",
-            timeout: 10000})
-            .done(function(data){
-                var fpsBox = document.getElementById("fps") ;
-                fpsBox.value = parseFloat(1000000000 / parseFloat(data.minFramePeriod)).toFixed(2) ;;
-                fpsBox.max = fpsBox.value ;
-            });
-    }
-
     // Slider
     function holdWhileSliding(obj){
         var exposureValue = Math.pow( (obj.value - obj.min) / (obj.max - obj.min), 2 ) * obj.max;
@@ -243,107 +277,38 @@ $(function() {
             });
         }
     }
-
-    // Center Window
-    function centerWindow(){
-        // calculate horizontal offset (to center the window on the sensor)
-        document.getElementById("hOff").value = Math.floor((document.getElementById("hRes").max - parseInt(document.getElementById("hRes").value)) / 2) ;
-
-        // calculate vertical offset (to center the window on the sensor)
-        document.getElementById("vOff").value = Math.floor((document.getElementById("vRes").max - parseInt(document.getElementById("vRes").value)) / 2) ;
-
-        if ( parseInt(document.getElementById("vOff").value) % 2 == 1 ) // if the number is odd
-            document.getElementById("vOff").value -= 1 ;
-
-        updatePreviewWindow();
+    // Set Exposure to its max value
+    function maxShutter(){
+        var sendParams = '{"exposurePercent":' + parseFloat(100) + '}';
+        for (i = 0; i < ipArray.length; i++)
+        {
+            $.ajax({
+                url: ipArray[i]+"/control/set",
+                data: sendParams,
+                method: "POST",
+                contentType: "application/json",
+                timeout: 10000
+            });
+        }
     }
 
-    function updatePreviewWindow(){
-
+    /* SMB Network Storage */
+    // Password Show/Hide
+    function PassShowHide() { // toggle the class (active/inactive), change the name, and run a function for a toggle button/switch
+        let smbPass = document.getElementById("smbPass");
+        if (smbPass.type == "password")
+        {
+            smbPass.placeholder = "s3cr3t";
+            smbPass.type = "text";
+        }
+        else if (smbPass.type == "text")
+        {
+            smbPass.placeholder = "******";
+            smbPass.type = "password";
+        }
     }
-
-
-    var resolutionPresets = [	[1920, 1200, 0],
-                                [1920, 1080, 0],
-                                [1696, 1050, 0],
-                                [1600, 1050, 0],
-                                [1408, 1050, 0],
-
-                                [1280, 1024, 0],
-                                [1280, 720, 0],
-                                [1280, 512, 0],
-                                [1280, 360, 0],
-                                [1280, 240, 0],
-                                [1280, 120, 0],
-                                [1280, 96, 0],
-                                [1024, 768, 0],
-                                [1024, 576, 0],
-                                [800, 600, 0],
-                                [800, 480, 0],
-                                [640, 480, 0],
-                                [640, 360, 0],
-                                [640, 240, 0],
-                                [640, 120, 0],
-                                [640, 96, 0],
-                                [336, 240, 0],
-                                [336, 120, 0],
-                                [336, 96, 0],
-                            ] ;
-
-
-    var counter = 0 ;
-
-
-    // SMB
-    //Password
-    					//	 key	 	 inactive		active
-    var nameChange = {	"displayToggleButton":	[ "Off", "On" ],
-                        "autoSaveButton":		[ "No", "Yes" ],
-
-                        "disableRBButton":		[ "Enabled", "Disabled" ],
-                        //					"smbPassShowHide":		[ "Show", "Hide" ],
-                     }
-
-    var buttonFunctions = {	"menu":			[ function(){ document.getElementById("menuList").style.display = "" ; }, function(){ menuKeeper() ; document.getElementById("menuList").style.display = "block" ;} ],					
-
-                            "debugToggle":			[ function(){ DebugOnOff = false ; document.getElementById("debugger").innerHTML = "" ; document.getElementById("debugger2").innerHTML = "" ; }, function() { DebugOnOff = true ; } ],
-                            "displayToggleButton":	[ function(){ dataRequester("set", '{"backlightEnabled": false}', pageUpdate) ; }, function(){ dataRequester("set", '{"backlightEnabled": true}', pageUpdate) ; } ],
-                            "autoSaveButton":		[ function(){ if (getCookie("as") > 0) { setCookie("as", parseInt(getCookie("as") * -1)) ; } else { setCookie("as", 0) ; } }, function() { if (getCookie("as") < 0) { setCookie("as", parseInt(getCookie("as") * -1)) ; } else { setCookie("as", 1) ; } } ],
-
-                            "disableRBButton":		[ function(){ dataSender("set", '{"disableRingBuffer": 0}') ; }, function() { dataSender("set", '{"disableRingBuffer": 1}') ; } ],
-                            "smbPassShowHide":		[ function(){ document.getElementById("smbPass").type="password" ; document.getElementById("smbPass").placeholder="******" ; }, function(){ document.getElementById("smbPass").type="text" ; document.getElementById("smbPass").placeholder="s3cr3t" ; } ],
-                          }
-
-
-    function toggler(element) { // toggle the class (active/inactive), change the name, and run a function for a toggle button/switch
-        var leftRight = 0 ;
-
-        if (element.classList.contains("active")) { // changing to 'inactive' or no state set previously
-        element.classList.remove("active") ; // remove the "active" styling
-        element.classList.add("inactive") ; // use the "inactive" styling
-        leftRight = 0 ; // use the 'left' column for names / functions
-        }
-        else if (element.classList.contains("disabled")) { // button disabled
-        return ; // don't do anything
-        }
-        else {
-        element.classList.remove("inactive") ; // remove the "inactive" styling
-        element.classList.add("active") ; // use the "active" styling
-        leftRight = 1 ; // use the 'right' column for names / functions
-        }
-
-        if (element.id in nameChange) // check if key-value exists
-        element.innerHTML = nameChange[element.id][leftRight] ; // set name to the left (inactive) or right (active) one
-
-        if (element.id in buttonFunctions) // if the key-value exists
-        buttonFunctions[element.id][leftRight]() ; // run the left (inactive) or right (active) function
-    }
-
-    $("#smbPassShowHide").on("click", function(){
-        toggler(this);
-    })
-
-
+    // Network Storage
+    // Keep SMB & NFS (in case)
     function netStorageRequest(command, type) {
 
         if (type == "nfs") {
@@ -401,27 +366,7 @@ $(function() {
             document.getElementById("popUpBackground").classList.remove("hidden") ;
             document.getElementById("netShareResultBox").classList.remove("hidden") ;
         }
-    
-        /*
-        requestSender.onreadystatechange = function(){ // do something with the response
-            if (this.readyState == 4 && this.status == 200){
-                if (requestSender.responseText == "") // got nothing back
-                    document.getElementById("netShareResultBox").firstChild.textContent = "Camera could not connect" ;
-                else {
-                    var jsonBack = JSON.parse(requestSender.responseText) ; // convert to json
-                    if ("error" in jsonBack)
-                        document.getElementById("netShareResultBox").firstChild.textContent = jsonBack.error ;
-                    else
-                        document.getElementById("netShareResultBox").firstChild.textContent = "Success!" ;
-                }
-    
-                // show the status
-                document.getElementById("popUpBackground").classList.remove("hidden") ;
-                document.getElementById("netShareResultBox").classList.remove("hidden") ;
-    
-            }
-        }
-        */
+
         for (i = 0; i < ipArray.length; i++)
         {
             $.ajax({
@@ -431,82 +376,34 @@ $(function() {
                 contentType: "application/json",
                 timeout: 10000
             });
-        }
-        //requestSender.open("GET", "/cgi-bin/netShare?" + parameters) ;
-        //requestSender.setRequestHeader("Content-Type", "application/json") ;
-    
-    
-        //requestSender.send() ;
-    
+        } 
     }
 
-    var inputFunctions = { "segmentNum":			function(value) { dataRequester("set", '{"recSegments": ' + value + '}', pageUpdate) ; },
-
-                            "colourDefaultBtn":		function() { detourRequester("set", '{"colorMatrix": [1.91455, -0.57666, -0.234131,  -0.30542, 1.3894, -0.0966797,  0.127197, -0.952881, 1.64917]}', pageUpdate) ; },
-                            "colourIdentityBtn":	function() { detourRequester("set", '{"colorMatrix": [1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0]}', pageUpdate) ; },
-                            "colourApplyBtn":		function() { detourRequester("set", '{"colorMatrix": [' + document.getElementById("colMatrixa").value + ', ' + document.getElementById("colMatrixb").value + ', ' + document.getElementById("colMatrixc").value + ', ' + document.getElementById("colMatrixd").value + ', ' + document.getElementById("colMatrixe").value + ', ' + document.getElementById("colMatrixf").value + ', ' + document.getElementById("colMatrixg").value + ', ' + document.getElementById("colMatrixh").value + ', ' + document.getElementById("colMatrixi").value + ']}', pageUpdate) ; },
-                            "colourPreset1Btn":		function() { detourRequester("set", '{"colorMatrix": [1.91455, -0.57666, -0.234131,  -0.30542, 1.3894, -0.0966797,  0.127197, -0.952881, 1.64917]}', pageUpdate) ; },
-                            "colourPreset2Btn":		function() { detourRequester("set", '{"colorMatrix": [1.23291, 0.646729, -0.776367,  -0.321777, 1.68994, -0.380859,  -0.0612793, -0.640869,1.52563]}', pageUpdate) ; },
-
-                            "whiteBalApplyBtn":		function() { detourRequester("set", '{"wbColor": [' + document.getElementById("whiteBalNuma").value + ', ' + document.getElementById("whiteBalNumb").value + ', ' + document.getElementById("whiteBalNumc").value + ']}', pageUpdate) ; },
-
-                            "resetAll":				function() { resetAll() ; },
-
-                            "morePreRecTime":		function() { extender += lastKnownMaxRecFrames ; document.getElementById("postTriggerSlider").max = lastKnownMaxRecFrames + extender ; document.getElementById("postTriggerSlider").value = parseInt(document.getElementById("postTriggerSlider").value) + lastKnownMaxRecFrames ; document.getElementById("postTriggerFrameNum").value = document.getElementById("postTriggerSlider").max - parseInt(document.getElementById("postTriggerSlider").value) ; document.getElementById("backgroundThing").style.borderLeftWidth = ( extender / (extender + lastKnownMaxRecFrames) * document.getElementById("postTriggerSlider").offsetWidth ) + "px" ; },
-                            "defaultTrigDelay":		function() { extender = 0 ; dataRequester("set", '{"recTrigDelay": 0}', pageUpdate) ; },
-
-                            "nfsTestBtn":			function() { if (!document.getElementById("nfsTestBtn").classList.contains("disabled")) { netStorageRequest("test", "nfs") ; } },
-                            "nfsApplyBtn":			function() { netStorageRequest("mount", "nfs") ; },
-                            "nfsUnmountBtn":		function() { if (!document.getElementById("nfsUnmountBtn").classList.contains("disabled")) {netStorageRequest("unmount", "nfs") ; } },
+    // Different buttons invoke different functions
+    var inputFunctions = { 
+                            "nfsTestBtn":		function() { if (!document.getElementById("nfsTestBtn").classList.contains("disabled")) { netStorageRequest("test", "nfs"); } },
+                            "nfsApplyBtn":		function() { netStorageRequest("mount", "nfs") ; },
+                            "nfsUnmountBtn":	function() { if (!document.getElementById("nfsUnmountBtn").classList.contains("disabled")) {netStorageRequest("unmount", "nfs"); } },
                             
-                            "smbTestBtn":			function() { if (!document.getElementById("smbTestBtn").classList.contains("disabled")) { netStorageRequest("test", "smb") ; } },
-                            "smbApplyBtn":			function() { netStorageRequest("mount", "smb") ; },
-                            "smbUnmountBtn":		function() { if (!document.getElementById("smbUnmountBtn").classList.contains("disabled")) {netStorageRequest("unmount", "smb") ; } },
+                            "smbTestBtn":		function() { if (!document.getElementById("smbTestBtn").classList.contains("disabled")) { netStorageRequest("test", "smb"); } },
+                            "smbApplyBtn":		function() { netStorageRequest("mount", "smb") ; },
+                            "smbUnmountBtn":	function() { if (!document.getElementById("smbUnmountBtn").classList.contains("disabled")) {netStorageRequest("unmount", "smb"); } },
                         }
 
-
-    function justRunSomething(element) {
-        if (element.id in inputFunctions) // if the key-value exists
-            inputFunctions[element.id](element.value) ; // run the function (with the value given)
+    function networkSaving(obj) {
+        if (obj.id in inputFunctions) // if the key-value exists
+            inputFunctions[obj.id](obj.value) ; // run the function (with the value given)
     }
 
-    $("#smbUnmountBtn").on("click", function(){
-        justRunSomething(this);
-    });
-    $("#smbTestBtn").on("click", function(){
-        justRunSomething(this);
-    });
-    $("#smbApplyBtn").on("click", function(){
-        justRunSomething(this);
-    })
-
-
-    var dropDownFunctions = { "0dB (x1)":		function(){ dataSender("set",'{"currentGain": 1}'); },
-                            "6dB (x2)":			function(){ dataSender("set",'{"currentGain": 2}'); },
-                            "12dB (x4)":		function(){ dataSender("set",'{"currentGain": 4}'); },
-                            "18dB (x8)":		function(){ dataSender("set",'{"currentGain": 8}'); },
-                            "24dB (x16)":		function(){ dataSender("set",'{"currentGain": 16}'); },
-
-                            "8000K":			function(){ dataSender("set", '{"wbTemperature": 8000}'); },
-                            "6500K":			function(){ dataSender("set", '{"wbTemperature": 6500}'); },
-                            "5600K":			function(){ dataSender("set", '{"wbTemperature": 5600}'); },
-                            "5250K":			function(){ dataSender("set", '{"wbTemperature": 5250}'); },
-                            "4600K":			function(){ dataSender("set", '{"wbTemperature": 4600}'); },
-                            "3200K":			function(){ dataSender("set", '{"wbTemperature": 3200}'); },
-                            "Custom":			function(){ document.getElementById("whiteBalance").firstChild.textContent = "Custom"; },
-
+    /* Save As Box */
+    // Video Save Location & Formats
+    var dropDownFunctions = {
                             "Refresh":			function(){ dataGetter("get", 'externalStorage', pageUpdate); },
 
                             "H.264 (mp4)":		function(){ document.getElementById("saveFormat").firstChild.textContent = "H.264 (mp4)"; setCookie("ff", 0) ; },
                             "CinemaDNG (raw)":	function(){ document.getElementById("saveFormat").firstChild.textContent = "CinemaDNG (raw)"; setCookie("ff", 1) ; },
                             "TIFF (images)":	function(){ document.getElementById("saveFormat").firstChild.textContent = "TIFF (images)"; setCookie("ff", 2) ; },
                             "TIFF RAW (images)": function(){ document.getElementById("saveFormat").firstChild.textContent = "TIFF RAW (images)"; setCookie("ff", 3) ; },
-
-                            "Debug Tools":		function(){ var item = document.getElementById("debugBar") ; if (item.classList.contains("hidden")) { item.classList.remove("hidden") ; } else { item.classList.add("hidden") ; } },
-
-                            "Play Mode":		function() { dataRequester("startPlayback", '{"framerate": 0}', pageUpdate) ; },
-                            "Cancel Save":		function() { dataSender("stopFilesave", "{}") ; },
-                            "Record Mode":		function() { dataRequester("startLivedisplay", "{}", pageUpdate) ; },
 
                             "Update":			function() { dataGetter("p", "", pageUpdate) ; },
                             "Yes (overwrite)":	function() { document.getElementById("popUpBackground").classList.add("hidden") ; document.getElementById("overwrittenBox").classList.add("hidden") ; dataRequester("startRecording", "{}", pageUpdate) ; },
@@ -516,39 +413,26 @@ $(function() {
                             "No (revert to previous settings)": function() { document.getElementById("popUpBackground").classList.add("hidden") ; document.getElementById("resNotAppliedBox").classList.add("hidden") ; dataGetter("get", "resolution&frameRate", pageUpdate) ; },
 
                             "Ok":				function() { document.getElementById("popUpBackground").classList.add("hidden") ; document.getElementById("errorWhileSavingBox").classList.add("hidden") ; document.getElementById("noRecordSegmentModeBox").classList.add("hidden") ; document.getElementById("cantApplyResBox").classList.add("hidden") ; },
-
                             }
 
-
-    const dbFromMult = { 1:0, 2:6, 4:12, 8:18, 16:24 } // provide a multiple, get back the dB value
-
-    function dropDownSelect (element) {
-        if (element.innerText in dropDownFunctions) // if the key-value exists
-            dropDownFunctions[element.innerText]() ; // run the function
+    function dropDownSelect (obj) {
+        if (obj.innerText in dropDownFunctions) // if the key-value exists
+            dropDownFunctions[obj.innerText]() ; // run the function
     }
 
-    $("#refreshdropdown").on("click", function(){
-        dropDownSelect(this);
-    });
-    $("#h264").on("click", function(){
-        dropDownSelect(this);
-    });
-    $("#cinemaDNG").on("click", function(){
-        dropDownSelect(this);
-    });
-    $("#tiff").on("click", function(){
-        dropDownSelect(this);
-    });
-    $("#tiffRaw").on("click", function(){
-        dropDownSelect(this);
-    });
-    $("#ok").on("click", function(){
-        dropDownSelect(this);
-    });
-
-
-
-    function saveWholeVideo() {
+    var StorageInfo;
+    var StorageNames = {"sda1": "USB / SATA",
+                        "mmcblk1p1": "SD Card",
+                        "nfs": "Network Drive",
+                        "smb": "Network Drive"
+                    };
+    var StorageLocation = "";
+    var lastKnownVideoState = "live";
+    var lastKnownFrameEnd = 1;
+    var lastKnownCurrentFrame = 0;
+    
+    // Save Button
+    function saveWholeVideo() { 
         var fileName = document.getElementById("fileName").value ;
     
         if ( (StorageLocation != "") && (lastKnownFrameEnd > 1) ) { // storage location set and some frames recorded
@@ -593,14 +477,67 @@ $(function() {
             document.getElementById("errorWhileSavingBox").classList.remove("hidden") ; // show the reason why you're unable to save
         }
     }
-    $("#saveVideoButton").on("click", function(){
-        saveWholeVideo();
-    });
 
+    function useStorageLocation(key) {
+        if (key in StorageInfo) {
+            var temp = "" ;		 
+            if (key in StorageNames)
+                temp += StorageNames[key] ; // write a more readable name
+            temp += "   (" + key + ")" ; // write the system name/location
+    
+            document.getElementById("storageLocation").firstChild.textContent = temp ; // write the selected storage location to the 'storage location' drop-down
+    
+            var saveStorageVal = parseInt(getCookie("as")) ;
+    
+            var i = 0 ;
+            for (i = 0 ; i < Object.keys(StorageNames).length ; i++) {
+                if (Object.keys(StorageNames)[i] == key) {
+                    if ( (saveStorageVal < 1) || isNaN(saveStorageVal) )
+                        setCookie("as", parseInt((i + 1) * -1)) ; // save this as the auto-select device
+                    else
+                        setCookie("as", parseInt(i + 1)) ; // save this as the auto-save device
+                }
+            }
+    
+            var requestSender = new XMLHttpRequest() ; // set up a new request
+            requestSender.open("get", "/cgi-bin/storageInfo?" + key) ; // call my 'storageInfo' script
+            requestSender.setRequestHeader("Content-Type", "application/json") ; // use json format
+    
+            requestSender.onreadystatechange = function(){ // do something with the response
+                if (this.readyState == 4 && this.status == 200){ // wait for successful response
+                    if (requestSender.responseText[0] == "{") { // make sure I got back some json
+                        var jsonBack = JSON.parse(requestSender.responseText) ; // convert to json
+                        if ("size" in jsonBack) // display the total storage space
+                            document.getElementById("storageSize").innerHTML = (jsonBack.size / 1000000).toFixed(1) + " GB" ;
+                        if ("available" in jsonBack) // display the available space
+                            document.getElementById("storageAvailable").innerHTML = (jsonBack.available / 1000000).toFixed(1) + " GB" ;
+                        if ("used" in jsonBack) // display the used space
+                            document.getElementById("storageUsed").innerHTML = (jsonBack.used / 1000000).toFixed(1) + " GB" ;
+                        if ("usedPercent" in jsonBack) // show the usage percent as a bar-graph
+                            document.getElementById("storageBar").firstChild.style.width = jsonBack.usedPercent + "%" ;
+                    }
+                }
+            }
+    
+            requestSender.send() ; // ask the camera for storage size info
+    
+    
+            StorageLocation = key ; // save the storage location
+    
+            document.getElementById("saveVideoButton").classList.remove("disabled") ; // enable the save button
+        }
+        else {
+            document.getElementById("storageSize").innerHTML = "" ;
+            document.getElementById("storageAvailable").innerHTML = "" ;
+            document.getElementById("storageUsed").innerHTML = "" ;
+    
+            StorageLocation = "" ; // save the storage location
+    
+            document.getElementById("saveVideoButton").classList.add("disabled") ; // disable the save button
+        }
+    }
 
-
-
-    /* Help FUnctions */
+    /* Help Functions */
     // Reboot all cameras to make all of them return to main screen -> ?
     function rebootCamera(){
         for (i = 0; i < ipArray.length; i++){
@@ -622,9 +559,11 @@ $(function() {
             element.value = element.min;
         }
     }
-
+    // Update webpage for video display & parameters
     function updateScreen(){
-        $("#imageDisplay").attr("src", camera_inet_addr+"/cgi-bin/screenCap?" + Math.random());
+        $("#imageDisplay").attr("src", first_camera_addr+"/cgi-bin/screenCap?" + Math.random());
+        getResolution();
+        getExposure();   
     }
 
     function setCookie (name, value) {
@@ -635,14 +574,9 @@ $(function() {
     
         document.cookie = name + "=" + value + "; expires=" + expiryDate.toUTCString() + "; path=/" ;
     }
-    
-    function appendLogMsg(msg){
 
-        var today = new Date();
-        $("#Status").append(today.toLocaleString()+" : "+msg+"<br/>");
-    }
-
-    // Record/Stop button
+    /* Connect functions with components */
+    // Record/Stop Button
     $("#btn_toggle_record").on("click", function(){
         var obj_btn = $(this);
 
@@ -653,45 +587,98 @@ $(function() {
         }
     });
 
-    // Apply Resolution, Frame Rate, Offset
-    $("#applyButton").on("click", function(){
-        setResFrameRate();
-    });
-
-    // Set Exposure Time, Percent, Degrees
-    $("#shutter").on("input", function(){
-        holdWhileSliding(this);
-    });
-    $("#exposureTime").on("input", function(){
-        setExposure(this);
-    });
-    $("#exposurePercent").on("input", function(){
-        setExposure(this);
-    });
-    $("#exposureDegrees").on("input", function(){
-        setExposure(this);
-    });
-    $("#maxShutterButton").on("click", function(){
-        maxShutter();
-    });
-
-    $("#maxFRButton").on("click", function(){
-        getMaxFrameRate();
-    })
-
+    // Apply Resolution, Frame Rate
+    //// Change Resolution
     $("#hRes").on("input", function(){
         centerWindow();
     });
     $("#vRes").on("input", function(){
         centerWindow();
-    })
+    });
     $("#centerWindow").on("click", function(){
         centerWindow();
+    });
+    //// Max (Frame Rate) Button
+    $("#maxFRButton").on("click", function(){
+        getMaxFrameRate();
+    });
+    //// Apply Changes
+    $("#applyButton").on("click", function(){
+        setResFrameRate();
+    });
+
+    // Set Exposure Time, Percent, Degrees
+    //// Shutter
+    $("#shutter").on("input", function(){
+        holdWhileSliding(this);
+    });
+    //// Time
+    $("#exposureTime").on("input", function(){
+        setExposure(this);
+    });
+    //// Percent
+    $("#exposurePercent").on("input", function(){
+        setExposure(this);
+    });
+    //// Degrees
+    $("#exposureDegrees").on("input", function(){
+        setExposure(this);
+    });
+    //// Max (Exposure) Button
+    $("#maxShutterButton").on("click", function(){
+        maxShutter();
+    });
+
+    // Network Storage Settings
+    //// Unmount
+    $("#smbUnmountBtn").on("click", function(){
+        networkSaving(this);
+    });
+    //// Test
+    $("#smbTestBtn").on("click", function(){
+        networkSaving(this);
+    });
+    //// Test
+    $("#smbApplyBtn").on("click", function(){
+        networkSaving(this);
     })
 
-    // Reboot cameras
+    // Save Videos
+    //// Location Refresh
+    $("#refreshdropdown").on("click", function(){
+        dropDownSelect(this);
+    });
+    //// Video Formats
+    $("#h264").on("click", function(){
+        dropDownSelect(this);
+    });
+    $("#cinemaDNG").on("click", function(){
+        dropDownSelect(this);
+    });
+    $("#tiff").on("click", function(){
+        dropDownSelect(this);
+    });
+    $("#tiffRaw").on("click", function(){
+        dropDownSelect(this);
+    });
+    //// OK
+    $("#ok").on("click", function(){
+        dropDownSelect(this);
+    });
+    //// Save Button
+    $("#saveVideoButton").on("click", function(){
+        saveWholeVideo();
+    });
+
+    // Reboot Button
     $("#rebootBtn").on("click", function(){
         rebootCamera();
+    });
+
+    // SMB Storage
+    //// Passwaord Show/Hide
+    $("#smbPassShowHide").on("click", function(){
+        PassShowHide();
     });
 
     $("#selectBox_res").on("change", function(){
@@ -736,4 +723,5 @@ $(function() {
     //initRes_SelectBox();
     getResolution();
     getExposure();
+    findFrameRates(); 
 });
