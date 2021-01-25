@@ -1,21 +1,73 @@
 $(function() {
 
     var i; // index for loop among all cameras
-    var ipArray; // array to store all ip addresses
+    var ipArray; // array to store all ip addresses (with http://)
+    var ipDisplay = []; // array to store all ip addresses (without http://) to display
     var first_camera_addr = ""; // first address in the ip list for display
+    var cameraVersion; 
+
+    // Check versions of all cameras
+    function getVersion() {
+
+    }
 
     // Input IP addresses
     function getIpAddress(){
         var ipList = document.getElementById("ip_address_area").value;
-        var ipDisplay = "The List of IP Address:<br>";
         ipArray = ipList.split(",");
-        first_camera_addr = ipArray[0];
- 
-        for (i = 0; i < ipArray.length; i++)
-        {
-            ipDisplay += ipArray[i] + "<br>";
+        for (i = 0; i < ipArray.length; i++) {
+            ipArray[i] = ipArray[i].split(" ").join(""); // remove any space
+
+            ipDisplay[i] = ipArray[i];
+            console.log(ipDisplay[i]);
+
+            ipArray[i] = "http://" + ipArray[i];
         }
-        document.getElementById("ip_list").innerHTML = ipDisplay;
+        first_camera_addr = ipArray[0];
+    }
+
+    function displayIpInformation() {
+        for (i = 0; i < ipDisplay.length; i++) {
+            $.ajax({
+                url: ipArray[i]+"/control/get",
+                data:{"sensorName":"",
+                      "sensorColorPattern":""},
+                method: "GET",
+                success: function(data) {
+                    ipDisplay[i] += data.sensorName;
+                    console.log(ipDisplay[i]);
+                },
+                error: function(error) {
+                    alert("Error: Camera(s) Disconnected!");
+                }
+            })
+        }
+
+        var list = document.getElementById("ipList");
+        list.innerHTML = "";
+
+        list.innerHTML += "The list of IP addresses:<br>";
+        for (i = 0; i < ipDisplay.length; i++) {
+            list.innerHTML += '<li>' + '<span data-id="'+ i +'">' + ipDisplay[i] + '</span>' + 
+                              '<button type="button" id= "button'+ i +'" class="list-close">delete</button></li>';
+        }
+        
+        // Get & display parameters from the first camera on the list
+        getResolution();
+        getExposure();
+        presetResolutions(); 
+        externalStorage();
+    }
+
+    function deleteIP(obj) {
+        var parent = document.getElementById("ipList");
+        var child = document.getElementById(obj.id);
+
+    }
+    function myFun10(){
+        var parent=document.getElementById("mDiv4");
+        var son=document.getElementById("p1");
+        parent.removeChild(son);
     }
 
     // Clear textarea
@@ -130,10 +182,8 @@ $(function() {
         }
     }
     // Resolution Presets
-    var resolutionPresets = [	[1920, 1200, 0],
+    var resolutionPresets = [	
                                 [1920, 1080, 0],
-                                [1680, 1050, 0],
-                                [1400, 1050, 0],
 
                                 [1280, 1024, 0],
                                 [1280, 720, 0],
@@ -151,18 +201,21 @@ $(function() {
                                 [640, 240, 0],
                                 [640, 120, 0],
                                 [640, 96, 0],
+
                                 [336, 240, 0],
                                 [336, 120, 0],
                                 [336, 96, 0],
+                                [320, 240, 0],
+                                [320, 120, 0],
+                                [320, 96, 0],
                             ];
     var counter = 0;
-    function findFrameRates() {
+    function presetResolutions() {
         if (counter < resolutionPresets.length)
         {
             $.ajax({
                 url:first_camera_addr+"/control/get",
-                data:{"minFramePeriod":"",
-                      "error":"",},
+                data:{"":""},
                 method:"GET",
                 timeout: 10000})
                 .done(function(data){
@@ -175,9 +228,17 @@ $(function() {
                     {
                         resolutionPresets.splice(counter, 1);
                     }
-                    findFrameRates();
-                    
+                    presetResolutions();
                 });
+        }
+        else
+        {
+            var list = document.getElementById("resolution");
+            list.innerHTML = "";
+            for (i = 0; i < resolutionPresets.length; i++)
+            {
+                list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets[i][0] + 'x' + resolutionPresets[i][1] + '@' + parseFloat(1000000000 / resolutionPresets[i][2]).toFixed(2) + 'fps </a>'
+            }
         }
     }
     // Resolution & Frame Rate
@@ -232,7 +293,7 @@ $(function() {
                 fpsBox.max = fpsBox.value ;
             });
     }
-    // Exposure
+    // Set Exposure
     function setExposure(obj){
         // Fix values with their limits
         boundInput(obj);       
@@ -419,18 +480,6 @@ $(function() {
         if (obj.innerText in dropDownFunctions) // if the key-value exists
             dropDownFunctions[obj.innerText]() ; // run the function
     }
-
-    var StorageInfo;
-    var StorageNames = {"sda1": "USB / SATA",
-                        "mmcblk1p1": "SD Card",
-                        "nfs": "Network Drive",
-                        "smb": "Network Drive"
-                    };
-    var StorageLocation = "";
-    var lastKnownVideoState = "live";
-    var lastKnownFrameEnd = 1;
-    var lastKnownCurrentFrame = 0;
-    
     // Save Button
     function saveWholeVideo() { 
         var fileName = document.getElementById("fileName").value ;
@@ -478,64 +527,7 @@ $(function() {
         }
     }
 
-    function useStorageLocation(key) {
-        if (key in StorageInfo) {
-            var temp = "" ;		 
-            if (key in StorageNames)
-                temp += StorageNames[key] ; // write a more readable name
-            temp += "   (" + key + ")" ; // write the system name/location
     
-            document.getElementById("storageLocation").firstChild.textContent = temp ; // write the selected storage location to the 'storage location' drop-down
-    
-            var saveStorageVal = parseInt(getCookie("as")) ;
-    
-            var i = 0 ;
-            for (i = 0 ; i < Object.keys(StorageNames).length ; i++) {
-                if (Object.keys(StorageNames)[i] == key) {
-                    if ( (saveStorageVal < 1) || isNaN(saveStorageVal) )
-                        setCookie("as", parseInt((i + 1) * -1)) ; // save this as the auto-select device
-                    else
-                        setCookie("as", parseInt(i + 1)) ; // save this as the auto-save device
-                }
-            }
-    
-            var requestSender = new XMLHttpRequest() ; // set up a new request
-            requestSender.open("get", "/cgi-bin/storageInfo?" + key) ; // call my 'storageInfo' script
-            requestSender.setRequestHeader("Content-Type", "application/json") ; // use json format
-    
-            requestSender.onreadystatechange = function(){ // do something with the response
-                if (this.readyState == 4 && this.status == 200){ // wait for successful response
-                    if (requestSender.responseText[0] == "{") { // make sure I got back some json
-                        var jsonBack = JSON.parse(requestSender.responseText) ; // convert to json
-                        if ("size" in jsonBack) // display the total storage space
-                            document.getElementById("storageSize").innerHTML = (jsonBack.size / 1000000).toFixed(1) + " GB" ;
-                        if ("available" in jsonBack) // display the available space
-                            document.getElementById("storageAvailable").innerHTML = (jsonBack.available / 1000000).toFixed(1) + " GB" ;
-                        if ("used" in jsonBack) // display the used space
-                            document.getElementById("storageUsed").innerHTML = (jsonBack.used / 1000000).toFixed(1) + " GB" ;
-                        if ("usedPercent" in jsonBack) // show the usage percent as a bar-graph
-                            document.getElementById("storageBar").firstChild.style.width = jsonBack.usedPercent + "%" ;
-                    }
-                }
-            }
-    
-            requestSender.send() ; // ask the camera for storage size info
-    
-    
-            StorageLocation = key ; // save the storage location
-    
-            document.getElementById("saveVideoButton").classList.remove("disabled") ; // enable the save button
-        }
-        else {
-            document.getElementById("storageSize").innerHTML = "" ;
-            document.getElementById("storageAvailable").innerHTML = "" ;
-            document.getElementById("storageUsed").innerHTML = "" ;
-    
-            StorageLocation = "" ; // save the storage location
-    
-            document.getElementById("saveVideoButton").classList.add("disabled") ; // disable the save button
-        }
-    }
 
     /* Help Functions */
     // Reboot all cameras to make all of them return to main screen -> ?
@@ -559,20 +551,156 @@ $(function() {
             element.value = element.min;
         }
     }
+    // Get and build a list of external storage
+    var StorageInfo;
+    var StorageNames = {"sda1": "USB / SATA",
+                        "mmcblk1p1": "SD Card",
+                        "nfs": "Network Drive",
+                        "smb": "Network Drive"
+                    };
+    var StorageLocation = "";
+    var lastKnownVideoState = "live";
+    var lastKnownFrameEnd = 1;
+    var lastKnownCurrentFrame = 0;
+
+    function useStorageLocation(key) {
+        if (key in StorageInfo) {
+            var temp = "" ;		 
+            if (key in StorageNames)
+                temp += StorageNames[key] ; // write a more readable name
+            temp += "   (" + key + ")" ; // write the system name/location
+    
+            document.getElementById("storageLocation").firstChild.textContent = temp ; // write the selected storage location to the 'storage location' drop-down
+    
+            var saveStorageVal = parseInt(getCookie("as")) ;
+    
+            var i = 0 ;
+            for (i = 0 ; i < Object.keys(StorageNames).length ; i++) {
+                if (Object.keys(StorageNames)[i] == key) {
+                    if ( (saveStorageVal < 1) || isNaN(saveStorageVal) )
+                        setCookie("as", parseInt((i + 1) * -1)) ; // save this as the auto-select device
+                    else
+                        setCookie("as", parseInt(i + 1)) ; // save this as the auto-save device
+                }
+            }
+    
+            StorageLocation = key ; // save the storage location
+    
+            document.getElementById("saveVideoButton").classList.remove("disabled") ; // enable the save button
+        }
+        else 
+        {
+            StorageLocation = "" ; // save the storage location  
+            document.getElementById("saveVideoButton").classList.add("disabled") ; // disable the save button
+        }
+    }
+
+    function externalStorage() {
+        $.ajax({
+            url: first_camera_addr+"/control/get",
+            data: {"externalStorage":""},
+            method: "GET",
+            contentType: "application/json",
+            timeout: 1000000
+        })
+        .done(function(data){
+            StorageInfo = data.externalStorage;
+            StorageInfo.size = -1;
+
+            for (key in StorageInfo)
+            {
+                StorageInfo.size++;
+            }
+
+            var list = document.getElementById("storageLocationInner");
+
+            if (StorageInfo.size > 0)
+            {
+                list.innerHTML = "";
+                for (key in StorageInfo)
+                {
+                    if (key != "size")
+                    {
+                        var temp = '<a id=' + key +'>';
+                        if (key in StorageNames)
+                            temp += StorageNames[key];
+                            
+                        temp += '&ensp;(' + key + ')</a>';
+
+                        list.innerHTML += temp;
+                    }
+                }
+
+                var saveStorageVal = parseInt(getCookie("as"));
+
+                if ( (saveStorageVal != 0) && isNaN(saveStorageVal) )
+                {
+                    if (saveStorageVal < 0)
+                    {
+                        saveStorageVal *= -1;
+                    }
+                    key = Object.keys(StorageNames)[saveStorageVal - 1];
+
+                    if (key in StorageInfo)
+                    {
+                        useStorageLocation(key);
+                    }
+                }
+            }
+            else
+            {
+                document.getElementById(StorageLocation).firstChild.textContent = "Location";
+                list.innerHTML = '<a>No Storage Connected</a>';
+
+                document.getElementById("saveVideoButton").classList.add("disabled");
+            }
+            list.innerHTML += '<a id="refreshdropdown">Refresh</a>';
+        })
+    }
+/*
+    var StorageNames = {"sda1": "USB / SATA",
+                        "mmcblk1p1": "SD Card",
+                        "nfs": "Network Drive",
+                        "smb": "Network Drive"
+                    };
+                    */
+    $("#sda1").on("click", function() {
+        useStorageLocation(this.id);
+    });
+    
+
     // Update webpage for video display & parameters
     function updateScreen(){
         $("#imageDisplay").attr("src", first_camera_addr+"/cgi-bin/screenCap?" + Math.random());
-        getResolution();
-        getExposure();   
+        //getResolution();
+        //getExposure();
+        //externalStorage();
     }
 
-    function setCookie (name, value) {
+    function setCookie (name, value) 
+    {
         var expiryDate = new Date() ;
-    
         expiryDate.setTime(expiryDate.getTime() + 1000*60*60*24*90) ; // add 90 days (time is in ms)
-    //	expiryDate.setTime(expiryDate.getTime() + 1000*60*20) ; // add 20 minutes (time is in ms)
-    
         document.cookie = name + "=" + value + "; expires=" + expiryDate.toUTCString() + "; path=/" ;
+    }
+
+    function getCookie(cname) 
+    {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for (i = 0; i < ca.length; i++)
+        {
+            var c = ca[i];
+            while (c.charAt(0) == " ")
+            {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0)
+            {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
     }
 
     /* Connect functions with components */
@@ -665,6 +793,8 @@ $(function() {
     $("#ok").on("click", function(){
         dropDownSelect(this);
     });
+    //// 
+    
     //// Save Button
     $("#saveVideoButton").on("click", function(){
         saveWholeVideo();
@@ -681,6 +811,7 @@ $(function() {
         PassShowHide();
     });
 
+    /*
     $("#selectBox_res").on("change", function(){
 
         var obj_selected = $("#selectBox_res option:selected");
@@ -709,19 +840,18 @@ $(function() {
         $("#fps").attr("data-minFramePeriod", minFramePeriod_val);
 
     });
+    */
 
     // Get IP Addresses List
     $("#ipConfirmButton").on("click", function(){
         getIpAddress();
+        displayIpInformation();
     });
     // Clear Textarea
     $("#ipClearButton").on("click", function(){
         clearIpAddress();
     });
 
-    var intervalID = setInterval(updateScreen, 500)
-    //initRes_SelectBox();
-    getResolution();
-    getExposure();
-    findFrameRates(); 
+    var intervalID = setInterval(updateScreen, 500);
+        
 });

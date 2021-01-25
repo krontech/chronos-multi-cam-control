@@ -43,13 +43,15 @@
 #fps { width: 105px; }
 
 #ip_address_area {
-    width: 50%;
-    height: 200px;
+    width: 80%;
+    height: 100px;
     border-radius: 10px;
 
     background-color: black;
     color: white;
     border: 0px;
+
+    margin-left: 10px;
 }
 
 
@@ -143,16 +145,15 @@
                 <a id="btn_toggle_record" class=" btn_Toggle_Record start"><div class="recordCircle"></div> Record </a>
                 <!--<input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Record"/>-->
             </div>
-            <div id="ipBox" class="Text-bar">
-                <div id="ip_display" style="display: flex;">
-                    <textarea id="ip_address_area" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
-                    <div id="j-selected-employee">
-                        <p id="ip_list"></p>
-                    </div>
-                </div>
+            <div id="ipBox" class="Text-bar horizLayout">
+                <b>Camera IP Addresses</b>
+                <textarea id="ip_address_area" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
                 <div id="ip_button" style="padding-bottom: 70px;">
                     <a id="ipConfirmButton" class="button"> Confirm </a>
                     <a id="ipClearButton" class="button"> Clear </a>
+                </div>
+                <div id="listContainer">
+                    <div id="ipList"></div>
                 </div>
             </div>
         </div>
@@ -172,13 +173,12 @@
             
 
             <div id="resolutionBox" class="horizLayout">
-                <b> Resolution </b> &ensp;
-                <div class="selectContainerHolder" onclick="">Presets<div id="resolution" class="selectContainer">
-                    <a> Unset (Please check JavaScript connection) </a>
-                </div></div>
+                <b> Resolution </b>
                 <br>
                 <input type="number" id="hRes"/> x <input type="number" id="vRes"/>
-                <a id="centerWindow" class="button"> Center </a>
+                <div class="selectContainerHolder" onclick="">Presets<div id="resolution" class="selectContainer">
+                    <a> Unset (Please check camera connection) </a>
+                </div></div>
                 <br>
                 <b> Frame Rate </b>
                 <br>
@@ -210,7 +210,7 @@
             <div id="saveAsBox" class="horizLayout">
                 <b> Save Video </b>
                 <br>
-                <div id="storageLocation" class="selectContainerHolder" onclick="">Location<div id="storageLocationInner" class="selectContainer">
+                <div id="storageLocation" class="selectContainerHolder">Location<div id="storageLocationInner" class="selectContainer">
                     <a> No Storage Connected </a>
                     <a id="refreshdropdown">Refresh</a>
                 </div></div>
@@ -242,6 +242,8 @@
                 </div>
             </div>
         </div>
+
+        
 
         <div id="mDiv3">
             <p>1</p> 
