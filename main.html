@@ -54,7 +54,6 @@
     margin-left: 10px;
 }
 
-
 @media screen and (min-width: 1737px) {
 	.rightContainer { max-width: 900px; }
 }
@@ -145,7 +144,7 @@
                 <a id="btn_toggle_record" class=" btn_Toggle_Record start"><div class="recordCircle"></div> Record </a>
                 <!--<input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Record"/>-->
             </div>
-            <div id="ipBox" class="Text-bar horizLayout">
+            <div id="ipBox" class="Text-bar">
                 <b>Camera IP Addresses</b>
                 <textarea id="ip_address_area" placeholder="Please input all IP addresses of cameras that you want to control"></textarea>
                 <div id="ip_button" style="padding-bottom: 70px;">
@@ -188,6 +187,11 @@
             </div>
             <br>
 
+            
+        </div>
+        <br>
+
+        <div class="rightContainer">
             <div id="smbStorageBox" class="horizLayout">
                 <b> Windows/SMB Net. Storage </b>
                 <br>
@@ -205,7 +209,7 @@
                 <a id="smbUnmountBtn" class="button">Unmount</a>
                 <a id="smbTestBtn" class="button">Test</a>
                 <a id="smbApplyBtn" class="button" style="float: right;">Apply</a>
-            </div>
+            </div>  
 
             <div id="saveAsBox" class="horizLayout">
                 <b> Save Video </b>
@@ -243,34 +247,23 @@
             </div>
         </div>
 
-        
-
-        <div id="mDiv3">
-            <p>1</p> 
-            <button onclick="myFun9()">Add</button>
-        </div>
-        <button onclick="myFun10()">Delete</button>
-        <div id="mDiv4">
-            <p id="p1">1</p>
-            <p id="p2">2</p>
-            <p id="p3">3</p>
-            <p id="p4">4</p>
-            <p id="p5">5</p>
-        </div>
 
         <script>
-        function myFun9(){
-            var mDiv3 = document.getElementById("mDiv3"); //获取组件1
-            var eleme = document.createElement("p"); //创建组件2
-            var ele_content = document.createTextNode("2");//创建节点内容
-            eleme.appendChild(ele_content); // 组件添加节点
-            mDiv3.appendChild(eleme); //组件2加入组件1
-            
+        function deleteIp(obj) {
+            var parent = document.getElementById("ipList");
+            var number = obj.id.replace("button", "");
+            var childId = "ipAddress" + number;
+            var child = document.getElementById(childId);
+            parent.removeChild(child);
         }
-        function myFun10(){
-            var parent=document.getElementById("mDiv4");
-            var son=document.getElementById("p1");
-            parent.removeChild(son);
+
+        function usePresetResolution(obj) {
+            var temp = obj.innerText.replace(/[^\d.]/gi, ' ') ; // strip out anything other than digits
+            var pieces = temp.split(/(\s+)/) ; // split up the contents
+
+            document.getElementById("hRes").value = pieces[0] ; // set the preset horizontal resolution
+            document.getElementById("vRes").value = pieces[2] ; // set the preset vertical resolution
+            document.getElementById("fps").value = pieces[4] ; // set the preset framerate
         }
         </script>
         

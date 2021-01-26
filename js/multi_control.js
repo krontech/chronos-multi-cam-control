@@ -1,57 +1,111 @@
 $(function() {
 
     var i; // index for loop among all cameras
-    var ipArray; // array to store all ip addresses (with http://)
+    var ipArray = []; // array to store all ip addresses (with http://)
+    var camInfo = [];
     var ipDisplay = []; // array to store all ip addresses (without http://) to display
     var first_camera_addr = ""; // first address in the ip list for display
-    var cameraVersion; 
+    var camVersion = [];
+    var camSerial = []; 
 
-    // Check versions of all cameras
-    function getVersion() {
+    // Check IP addresses
+    function checkIp() {
+        var ipSplit = [];
+        for (i = 0; i < ipArray.length; i++) {
+            ipArray[i] = ipArray[i].split(" ").join(""); // remove any space
+            ipSplit = ipArray[i].split(".");
 
+            if (ipSplit.length != 4) {
+                return false;
+            }
+
+            for (var j = 0; j < ipSplit.length; j++) {
+                if ( isNaN(ipSplit[j]) ) {
+                    return false;
+                }
+            }  
+        }
+
+        return true;
     }
 
     // Input IP addresses
     function getIpAddress(){
+        // Remove all former ip and information
+        ipArray = [];
+        ipDisplay = [];
+        camInfo = [];
+
         var ipList = document.getElementById("ip_address_area").value;
         ipArray = ipList.split(",");
+
+        var checkResult = checkIp();
+        if (!checkResult) {
+            alert("IP address(es) Invalid!");
+        }
+
         for (i = 0; i < ipArray.length; i++) {
-            ipArray[i] = ipArray[i].split(" ").join(""); // remove any space
-
             ipDisplay[i] = ipArray[i];
-            console.log(ipDisplay[i]);
-
             ipArray[i] = "http://" + ipArray[i];
         }
         first_camera_addr = ipArray[0];
     }
+    // Get Information (Model, Color/Mono, Memory Size & Serial Number)
+    function getCamInfo() {
+        var ipDisplay = [];
+        var list = document.getElementById("ipList");
+        list.innerHTML = ""
 
-    function displayIpInformation() {
-        for (i = 0; i < ipDisplay.length; i++) {
+        list.innerHTML += "The list of IP addresses:<br>";
+        for (i = 0; i < ipArray.length; i++) {
             $.ajax({
                 url: ipArray[i]+"/control/get",
-                data:{"sensorName":"",
-                      "sensorColorPattern":""},
+                data: {"cameraModel":"",
+                       "cameraMemoryGB":"",
+                       "cameraSerial":"",
+                       "sensorColorPattern":"",},
+                async: false,
                 method: "GET",
-                success: function(data) {
-                    ipDisplay[i] += data.sensorName;
-                    console.log(ipDisplay[i]);
-                },
-                error: function(error) {
-                    alert("Error: Camera(s) Disconnected!");
-                }
+                timeout: 10000,
             })
-        }
+            .done(function(data) {
+                if (data.cameraModel.startsWith("CR14")) {
+                    camInfo[i] = " - Chronos 1.4, ";
+                    camVersion[i] = "1.4";
+                }
+                else {
+                    camInfo[i] = " - Chronos 2.1, ";
+                    camVersion[i] = "2.1";
+                }
 
+                if (data.sensorColorPattern == "GRBG") {
+                    camInfo[i] += "Color, ";
+                }
+                else {
+                    camInfo[i] += "Monochrome, ";
+                }
+
+                camInfo[i] += data.cameraMemoryGB + "GB, Serial " + data.cameraSerial;
+                camSerial[i] = data.cameraSerial;
+            });
+        }
+        return camInfo, camVersion;
+    }
+    // Display IP, Camera Information and Parameters (from the first valid camera in the ip list)
+    function displayCam() {
+        getCamInfo();
         var list = document.getElementById("ipList");
         list.innerHTML = "";
 
         list.innerHTML += "The list of IP addresses:<br>";
         for (i = 0; i < ipDisplay.length; i++) {
-            list.innerHTML += '<li>' + '<span data-id="'+ i +'">' + ipDisplay[i] + '</span>' + 
-                              '<button type="button" id= "button'+ i +'" class="list-close">delete</button></li>';
+            if ( typeof(camInfo[i]) == "undefined" ) {
+                alert("Camera(s) Disconnected!");
+            }
+            list.innerHTML += '<li id="ipAddress'+ i +'">' + '<span>' + ipDisplay[i] + camInfo[i] + '</span>' + 
+                              '<button type="button" id= "button'+ i +'" onclick="deleteIp(this)">delete</button></li>';
         }
-        
+
         // Get & display parameters from the first camera on the list
         getResolution();
         getExposure();
@@ -59,16 +113,7 @@ $(function() {
         externalStorage();
     }
 
-    function deleteIP(obj) {
-        var parent = document.getElementById("ipList");
-        var child = document.getElementById(obj.id);
-
-    }
-    function myFun10(){
-        var parent=document.getElementById("mDiv4");
-        var son=document.getElementById("p1");
-        parent.removeChild(son);
-    }
+    
 
     // Clear textarea
     function clearIpAddress(){
@@ -173,74 +218,93 @@ $(function() {
         "framePeriod": 100000,
         "resolution": {
             bitDepth: 12,
-            hOffset: 320,
             hRes: 640,
             minFrameTime: 0.000444622,
             vDarkRows: 0,
-            vOffset: 272,
             vRes: 480,
         }
     }
     // Resolution Presets
-    var resolutionPresets = [	
-                                [1920, 1080, 0],
-
-                                [1280, 1024, 0],
-                                [1280, 720, 0],
-                                [1280, 512, 0],
-                                [1280, 360, 0],
-                                [1280, 240, 0],
-                                [1280, 120, 0],
-                                [1280, 96, 0],
-                                [1024, 768, 0],
-                                [1024, 576, 0],
-                                [800, 600, 0],
-                                [800, 480, 0],
-                                [640, 480, 0],
-                                [640, 360, 0],
-                                [640, 240, 0],
-                                [640, 120, 0],
-                                [640, 96, 0],
-
-                                [336, 240, 0],
-                                [336, 120, 0],
-                                [336, 96, 0],
-                                [320, 240, 0],
-                                [320, 120, 0],
-                                [320, 96, 0],
+    var resolutionPresets21 = [	
+                                [1920, 1080, 1000.11],
+                                [1280, 1024, 1512.01],
+                                [1280, 720, 2142.19],
+                                [1280, 512, 2996.77],
+                                [1280, 360, 4229.89],
+                                [1280, 240, 6265.15],
+                                [1280, 120, 12075.40],
+                                [1280, 96, 14825.14],
+                                [1024, 768, 2531.65],
+                                [1024, 576, 3358.86],
+                                [800, 600, 4352.63],
+                                [800, 480, 5406.98],
+                                [640, 480, 5406.98],
+                                [640, 360, 7135.42],
+                                [640, 240, 10488.12],
+                                [640, 120, 19783.96],
+                                [640, 96, 24046.55],
                             ];
-    var counter = 0;
-    function presetResolutions() {
-        if (counter < resolutionPresets.length)
-        {
-            $.ajax({
-                url:first_camera_addr+"/control/get",
-                data:{"":""},
-                method:"GET",
-                timeout: 10000})
-                .done(function(data){
-                    if (data.minFramePeriod != "")
-                    {
-                        resolutionPresets[counter][2] = data.minFramePeriod;
-                        counter++;
-                    }
-                    else if (data.error != "")
-                    {
-                        resolutionPresets.splice(counter, 1);
-                    }
-                    presetResolutions();
-                });
+    var resolutionPresets14 = [	
+                                [1280, 1024, 1069.61],
+                                [1280, 720, 1519.89],
+                                [1280, 512, 2134.78],
+                                [1280, 360, 3030.82],
+                                [1280, 240, 4532.87],
+                                [1280, 120, 8986.58],
+                                [1280, 96, 11184.31],
+                                [1024, 768, 1770.05],
+                                [1024, 576, 2357.63],
+                                [800, 600, 2871.91],
+                                [800, 480, 3585.95],
+                                [640, 480, 4434.59],
+                                [640, 360, 5899.71],
+                                [640, 240, 8810.57],
+                                [640, 120, 17391.30],
+                                [640, 96, 21598.27],
+                                [336, 240, 15968.83],
+                                [336, 120, 31294.01],
+                                [336, 96, 38726.67],
+                                [320, 240, 16682.24],
+                                [320, 120, 32668.00],
+                                [320, 96, 40413.84],
+                            ];
+
+    function checkVersion() {
+        var sameVer = !camVersion.some(function(value) {
+                            return value !== camVersion[0];
+                      });
+        if (sameVer) {
+            return camVersion[0];
         }
-        else
-        {
-            var list = document.getElementById("resolution");
-            list.innerHTML = "";
-            for (i = 0; i < resolutionPresets.length; i++)
-            {
-                list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets[i][0] + 'x' + resolutionPresets[i][1] + '@' + parseFloat(1000000000 / resolutionPresets[i][2]).toFixed(2) + 'fps </a>'
+        else {
+            return "Mix";
+        }
+    }
+
+    function presetResolutions() {
+        var version = checkVersion();
+        console.log(version);
+        var list = document.getElementById("resolution");
+        list.innerHTML = "";
+
+        if (version == "1.4") {
+            for (i = 0; i < resolutionPresets14.length; i++) {
+                list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets14[i][0] + "x" + resolutionPresets14[i][1] + " @ " + resolutionPresets14[i][2] + "fps </a>"
+            }
+        }
+        else if (version == "2.1") {
+            for (i = 0; i < resolutionPresets21.length; i++) {
+                list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets21[i][0] + "x" + resolutionPresets21[i][1] + " @ " + resolutionPresets21[i][2] + "fps </a>"
+            }
+        }
+        else {
+            alert("Different Version. Some Resolutions invalid!");
+            for (i = 0; i < resolutionPresets21.length-1; i++) {
+                list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets14[i][0] + "x" + resolutionPresets14[i][1] + " @ " + resolutionPresets14[i][2] + "fps </a>"
             }
         }
     }
+    
     // Resolution & Frame Rate
     function setResFrameRate(){
         if($("#hRes").val()){
@@ -263,8 +327,6 @@ $(function() {
             alert("Please input a frame rate value.");
             return;
         }
-        init_resolution.resolution.hOffset = parseInt($("#hOff").val());
-        init_resolution.resolution.vOffset = parseInt($("#vOff").val());
 
         init_resolution.resolution.minFrameTime = parseFloat($("#fps").attr("data-minFramePeriod"));
         
@@ -287,7 +349,6 @@ $(function() {
             method:"GET",
             timeout: 10000})
             .done(function(data){
-                console.log(data);
                 var fpsBox = document.getElementById("fps") ;
                 fpsBox.value = parseFloat(1000000000 / parseFloat(data.minFramePeriod)).toFixed(2) ;;
                 fpsBox.max = fpsBox.value ;
@@ -459,8 +520,6 @@ $(function() {
     /* Save As Box */
     // Video Save Location & Formats
     var dropDownFunctions = {
-                            "Refresh":			function(){ dataGetter("get", 'externalStorage', pageUpdate); },
-
                             "H.264 (mp4)":		function(){ document.getElementById("saveFormat").firstChild.textContent = "H.264 (mp4)"; setCookie("ff", 0) ; },
                             "CinemaDNG (raw)":	function(){ document.getElementById("saveFormat").firstChild.textContent = "CinemaDNG (raw)"; setCookie("ff", 1) ; },
                             "TIFF (images)":	function(){ document.getElementById("saveFormat").firstChild.textContent = "TIFF (images)"; setCookie("ff", 2) ; },
@@ -527,8 +586,6 @@ $(function() {
         }
     }
 
-    
-
     /* Help Functions */
     // Reboot all cameras to make all of them return to main screen -> ?
     function rebootCamera(){
@@ -563,7 +620,9 @@ $(function() {
     var lastKnownFrameEnd = 1;
     var lastKnownCurrentFrame = 0;
 
+    // Choose Save Location
     function useStorageLocation(key) {
+        console.log("use Storage Location");
         if (key in StorageInfo) {
             var temp = "" ;		 
             if (key in StorageNames)
@@ -657,14 +716,15 @@ $(function() {
             list.innerHTML += '<a id="refreshdropdown">Refresh</a>';
         })
     }
-/*
+
     var StorageNames = {"sda1": "USB / SATA",
                         "mmcblk1p1": "SD Card",
                         "nfs": "Network Drive",
                         "smb": "Network Drive"
                     };
-                    */
+                    
     $("#sda1").on("click", function() {
+        console.log(this.id);
         useStorageLocation(this.id);
     });
     
@@ -672,8 +732,8 @@ $(function() {
     // Update webpage for video display & parameters
     function updateScreen(){
         $("#imageDisplay").attr("src", first_camera_addr+"/cgi-bin/screenCap?" + Math.random());
-        //getResolution();
-        //getExposure();
+        getResolution();
+        getExposure();
         //externalStorage();
     }
 
@@ -718,10 +778,10 @@ $(function() {
     // Apply Resolution, Frame Rate
     //// Change Resolution
     $("#hRes").on("input", function(){
-        centerWindow();
+        //centerWindow();
     });
     $("#vRes").on("input", function(){
-        centerWindow();
+        //centerWindow();
     });
     $("#centerWindow").on("click", function(){
         centerWindow();
@@ -774,7 +834,8 @@ $(function() {
     // Save Videos
     //// Location Refresh
     $("#refreshdropdown").on("click", function(){
-        dropDownSelect(this);
+        externalStorage();
+        updateScreen();
     });
     //// Video Formats
     $("#h264").on("click", function(){
@@ -845,7 +906,7 @@ $(function() {
     // Get IP Addresses List
     $("#ipConfirmButton").on("click", function(){
         getIpAddress();
-        displayIpInformation();
+        displayCam();
     });
     // Clear Textarea
     $("#ipClearButton").on("click", function(){
