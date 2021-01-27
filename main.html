@@ -130,7 +130,7 @@
 
         <div class="leftContainer">
             <div id="videoDisplay" class="videoDisplay">
-                <!--<img id="imageDisplay" class="" alt="" src="">-->
+                <img id="imageDisplay" alt="Screenshot Display">
                 <div id="crossHairs" class="overlay hidden"></div>
                 <div id="saveProgress" class="progressBar hidden">
                     <div id="videoStateOverlay" class="stateNotice">Saving Video</div>
@@ -140,9 +140,8 @@
             </div>
 
             <div class="Text-bar">
-                <a id="rebootBtn" class=""> Reboot </a>
-                <a id="btn_toggle_record" class=" btn_Toggle_Record start"><div class="recordCircle"></div> Record </a>
-                <!--<input type="button" id="btn_toggle_record" class="btn_Toggle_Record start" value="Record"/>-->
+                <!--<a id="rebootBtn" class=""> Reboot </a>-->
+                <a id="record"><div class="recordCircle"></div>Record</a>
             </div>
             <div id="ipBox" class="Text-bar">
                 <b>Camera IP Addresses</b>
@@ -231,42 +230,67 @@
                     <a id="tiffRaw">TIFF RAW (images)</a>
                 </div></div>
                 <a id="saveVideoButton" class="button disabled"> Save </a>
-                <br>
-                <div id="popUpBackground" class="popUpBackground hidden">
-                    <div id="messageWarn" class="popUpMessage">
-                        <div id="netShareResultBox" class="horizLayout hidden">
-                            Status of the network share requests
-                            <br>
-                            <a id="ok" style="float: right;" class="button">Ok</a>
-                        </div>
-                        <div id="somethingWeirdBox" class="horizLayout hidden">
-                            Something weird is happening
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
-
-
-        <script>
-        function deleteIp(obj) {
-            var parent = document.getElementById("ipList");
-            var number = obj.id.replace("button", "");
-            var childId = "ipAddress" + number;
-            var child = document.getElementById(childId);
-            parent.removeChild(child);
-        }
-
-        function usePresetResolution(obj) {
-            var temp = obj.innerText.replace(/[^\d.]/gi, ' ') ; // strip out anything other than digits
-            var pieces = temp.split(/(\s+)/) ; // split up the contents
-
-            document.getElementById("hRes").value = pieces[0] ; // set the preset horizontal resolution
-            document.getElementById("vRes").value = pieces[2] ; // set the preset vertical resolution
-            document.getElementById("fps").value = pieces[4] ; // set the preset framerate
-        }
-        </script>
-        
     </div>
+
+    <div id="popUpBackground" class="popUpBackground hidden">
+        <div id="messageWarn" class="popUpMessage">
+            <div id="overwrittenBox" class="horizLayout hidden">
+                You have not saved any of the previous recording. Do you want to erase it and start a new recording?
+                <br>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">No (don't record)</a>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Yes (overwrite)</a>
+            </div>
+            <div id="somethingWeirdBox" class="horizLayout hidden">
+                Something weird is happening
+            </div>
+            <div id="resNotAppliedBox" class="horizLayout hidden">
+                The resolution & framerate settings were changed, but they were not applied. Do you want to use the new settings?
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Yes (apply the changed settings)</a>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">No (revert to previous settings)</a>
+            </div>
+            <div id="errorWhileSavingBox" class="horizLayout hidden">
+                Cannont save the file
+                <br>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
+            </div>
+            <div id="noRecordSegmentModeBox" class="horizLayout hidden">
+                The webpage cannot start a recording in "Segmented" mode.
+                <br>
+                You can change recording mode on the <a href="\settings.html">settings</a> page.
+                <br>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
+            </div>
+            <div id="cantApplyResBox" class="horizLayout hidden">
+                Cannot apply resolution / framerate settings.
+                <br>
+                One or more settings are outside the acceptable bounds.
+                <br>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    function deleteIp(obj) {
+        var parent = document.getElementById("ipList");
+        var number = obj.id.replace("button", "");
+        var childId = "ipAddress" + number;
+        var child = document.getElementById(childId);
+        parent.removeChild(child);
+    }
+
+    function usePresetResolution(obj) {
+        var temp = obj.innerText.replace(/[^\d.]/gi, ' ') ; // strip out anything other than digits
+        var pieces = temp.split(/(\s+)/) ; // split up the contents
+
+        document.getElementById("hRes").value = pieces[0] ; // set the preset horizontal resolution
+        document.getElementById("vRes").value = pieces[2] ; // set the preset vertical resolution
+        document.getElementById("fps").value = pieces[4] ; // set the preset framerate
+    }
+    </script>
+
 </body>
 </html>

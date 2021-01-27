@@ -121,6 +121,112 @@ $(function() {
         document.getElementById("ip_list").innerHTML="";
     }
 
+    var img = document.getElementById("imageDisplay");
+    var videoWindow = document.getElementById("videoDisplay");
+
+    img.onload = function scaleToFit() {
+        videoWindow.style.height = "650px";
+
+        var scale = Math.min(videoWindow.clientWidth / img.width, videoWindow.clientHeight / img.height);
+        var x = (videoWindow.clientWidth / 2) - (img.width / 2) * scale;
+        var y = (videoWindow.clientHeight / 2) - (img.height / 2) * scale;
+        img.height = img.height * scale;
+        if (img.height < videoWindow.clientHeight) {
+            videoWindow.style.height = (img.height + 6).toString() + "px";
+        }
+    }
+
+    function stateSelecter(element, state) {
+        if (state) {
+            element.classList.remove("inactive");
+            element.classList.add("active");
+        }
+        else {
+            element.classList.remove("active");
+            element.classList.add("inactive");
+        }
+
+        if (element.id in nameChange) {
+            element.innerHTML = nameChange[element.id][state];
+        }
+    }
+
+    var resFRSettingsOnCam = [];
+    function checkFRChanged() {
+        if (resFRSettingsOnCam[0] == document.getElementById("hRes").value && resFRSettingsOnCam[1] == document.getElementById("vRes").value && resFRSettingsOnCam[4] == document.getElementById("fps".value)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    function tryToStartRecording() {
+        /*
+        if ( checkFRChanged() ) {
+            document.getElementById("popUpBackground").classList.remove("hidden");
+            document.getElementById("resNotAppliedBox").classList.remove("hidden");
+            stateSelecter(document.getElementById("record"), 0);
+        }
+        */
+        if ( (getCookie("sr") != 1) && (getCookie("wo") != "a") || (getCookie("wo") == "n") ) {
+            for (i = 0; i < ipArray.length; i++) {
+                $.ajax({
+                    url: ipArray[i] + "/control/startRecording",
+                    data: {},
+                    method: "GET",
+                    timeout: 10000
+                });
+            }
+        }
+        else {
+            document.getElementById("popUpBackground").classList.remove("hidden");
+            document.getElementById("overwrittenBox").classList.remove("hidden");
+            stateSelecter(document.getElementById("record"), 0);
+        }
+    }
+
+
+    var disabledFunctions = { "record": function() {tryToStartRecording();} };
+    var nameChange = { "record": ["<div class='recordCircle'></div>Record", "<div class='recordSquare'></div>Recording"] };
+    var buttonFunctios = { "record": [function() {dataSender("stopRecording", "");}, function() {tryToStartRecording();}] };
+    function toggler(element) {
+        var leftRight = 0;
+
+        if (element.classList.contains("active")) {
+            element.classList.remove("active");
+            element.classList.add("inactive");
+            leftRight = 0;
+        }
+        else {
+            element.classList.remove("inactive");
+            element.classList.add("active");
+            leftRight = 1;
+        }
+
+        if (element.id in nameChange) {
+            element.innerHTML = nameChange[element.id][leftRight];
+        }
+
+        if (leftRight == 1) {
+            tryToStartRecording();
+        }
+        else {
+            for (i = 0; i < ipArray.length; i++) {
+                $.ajax({
+                    url: ipArray[i] + "/control/stopRecording",
+                    data: {},
+                    method: "GET",
+                    timeout: 10000
+                });
+            }
+        }
+    }
+
+     
+
+
+
     // Start record
     function startRecording(type){
         for (i = 0; i < ipArray.length; i++)
@@ -270,20 +376,24 @@ $(function() {
                             ];
 
     function checkVersion() {
-        var sameVer = !camVersion.some(function(value) {
-                            return value !== camVersion[0];
-                      });
-        if (sameVer) {
-            return camVersion[0];
+        if (camVersion.length > 1){
+            var sameVer = !camVersion.some(function(value) {
+                                return value !== camVersion[0];
+                        });
+            if (sameVer) {
+                return camVersion[0];
+            }
+            else {
+                return "Mix";
+            }
         }
         else {
-            return "Mix";
+            return camVersion[0];
         }
     }
 
     function presetResolutions() {
         var version = checkVersion();
-        console.log(version);
         var list = document.getElementById("resolution");
         list.innerHTML = "";
 
@@ -303,42 +413,47 @@ $(function() {
                 list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets14[i][0] + "x" + resolutionPresets14[i][1] + " @ " + resolutionPresets14[i][2] + "fps </a>"
             }
         }
+
     }
     
     // Resolution & Frame Rate
-    function setResFrameRate(){
-        if($("#hRes").val()){
-            init_resolution.resolution.hRes = parseInt($("#hRes").val());
-        }else{
-            alert("Please select a resolution.");
-            return;
+    function applyResolution() {
+        var version = checkVersion();
+        var hRes = document.getElementById("hRes");
+        var vRes = document.getElementById("vRes");
+        var hOff;
+        var vOff;
+
+        if (version == "1.4" || version == "Mix") {
+            hOff = (resolutionPresets14[0][0] - document.getElementById("hRes").value) / 2;
+            vOff = (resolutionPresets14[0][1] - document.getElementById("vRes").value) / 2;
+        }
+        else {
+            hOff = (resolutionPresets21[0][0] - document.getElementById("hRes").value) / 2;
+            vOff = (resolutionPresets21[0][1] - document.getElementById("vRes").value) / 2;
         }
 
-        if($("#vRes").val()){
-            init_resolution.resolution.vRes = parseInt($("#vRes").val());
-        }else{
-            alert("Please select a resolution.");
-            return;
-        }
+        if ( (hRes.validity.valid) && (vRes.validity.valid) && (hOff >= 0) && (vOff >= 0) && (document.getElementById("fps").validity.valid) && (!document.getElementById("applyButton").classList.contains("disabled")) ) {
+            var parameters = '{"resolution": {"hRes": ' + document.getElementById("hRes").value;
+            parameters += ', "vRes": ' + document.getElementById("vRes").value;
+            parameters += '}, "framePeriod": ' + Math.round(parseFloat( 1 / document.getElementById("fps").value * 1000000000 ));
+            parameters += '}'
 
-        if($("#fps").val()){
-            init_resolution.framePeriod = parseInt(1000000000/parseInt($("#fps").val()));
-        }else{
-            alert("Please input a frame rate value.");
-            return;
-        }
+            for (i = 0; i < ipArray.length; i++) {
+                $.ajax({
+                    url:ipArray[i]+"/control/set",
+                    data:parameters,
+                    method:"POST",
+                    contentType: "application/json",
+                    timeout: 10000
+                });
+            }
 
-        init_resolution.resolution.minFrameTime = parseFloat($("#fps").attr("data-minFramePeriod"));
-        
-        for (i = 0; i < ipArray.length; i++)
-        {
-            $.ajax({
-                url:ipArray[i]+"/control/set",
-                data:JSON.stringify(init_resolution),
-                method:"POST",
-                contentType: "application/json",
-                timeout: 10000
-            });
+            resFRSettingsOnCam = [hRes.value, vRes.value, hOff, vOff, document.getElementById("fps").value];
+        }
+        else if (document.getElementById("applyButton").classList.contains("disabled")) {
+            document.getElementById("popUpBackground").classList.remove("hidden");
+            document.getElementById("cantApplyResBox").classList.remove("hidden");
         }
     }
     // Set Frame Rate to its max value
@@ -352,6 +467,15 @@ $(function() {
                 var fpsBox = document.getElementById("fps") ;
                 fpsBox.value = parseFloat(1000000000 / parseFloat(data.minFramePeriod)).toFixed(2) ;;
                 fpsBox.max = fpsBox.value ;
+
+                if (!fpsBox.validity.valid) {
+                    document.getElementById("applyButton").classList.add("disabled");
+                }
+                else if ( (document.getElementById("hRes").validity.valid) && (document.getElementById("vRes").validity.valid) ) {
+                    document.getElementById("applyButton").classList.remove("disabled");
+                }
+
+                //dataRequester("getResolutionTimingLimits", '{"hRes":' + document.getElementById("hRes").value + ',"vRes":' + document.getElementById("vRes").value + '}', retrieval) ;	
             });
     }
     // Set Exposure
@@ -535,55 +659,104 @@ $(function() {
                             "Ok":				function() { document.getElementById("popUpBackground").classList.add("hidden") ; document.getElementById("errorWhileSavingBox").classList.add("hidden") ; document.getElementById("noRecordSegmentModeBox").classList.add("hidden") ; document.getElementById("cantApplyResBox").classList.add("hidden") ; },
                             }
 
-    function dropDownSelect (obj) {
+    dropDownSelect = function(obj) {
         if (obj.innerText in dropDownFunctions) // if the key-value exists
             dropDownFunctions[obj.innerText]() ; // run the function
     }
     // Save Button
+    var lastKnownVideoState = "live";
+    var lastKnownFrameEnd = 1;
+    var lastKnownCurrentFrame = 0;
+    var lastKnownRecordMode = "";
+    var lastKnownState = "idle";
     function saveWholeVideo() { 
-        var fileName = document.getElementById("fileName").value ;
-    
-        if ( (StorageLocation != "") && (lastKnownFrameEnd > 1) ) { // storage location set and some frames recorded
-            var request = '{"device": "' + StorageLocation + '", "format": '
-            switch (document.getElementById("saveFormat").firstChild.textContent) {
-                case "CinemaDNG (raw)":
-                    request += '"dng"' ; // use cinemaDNG files
-                    break ;
-    
-                case "TIFF (images)":
-                    request += '"tiff"' ; // use tiff images
-                    break ;
-    
-                case "TIFF RAW (images)":
-                    request += '"tiffRaw"' ; // use tiff RAW images
-                    break ;
-    
-                case "H.264 (mp4)":
-                default:
-                    request += '"h264"' ; // use h.264 format (mp4)
-                    break ;
+        $.ajax({
+            url: first_camera_addr+"/control/get",
+            data: {"videoState":"",
+                   "totalFrames":"",},
+            method: "GET",
+            contentType: "application/json",
+            timeout: 10000
+        })
+        .done(function(data) {
+            lastKnownFrameEnd = data.totalFrames;
+            console.log(data.totalFrames);
             
+            switch(data.videoState) {
+                case "live":
+                    document.getElementById("saveProgress").classList.add("hidden");
+                    document.getElementById("videoStateOverlay").innerHTML = "Live Display";
+                    break ;
+
+                case "play":
+                    document.getElementById("saveProgress").classList.remove("hidden")
+                    document.getElementById("videoStateOverlay").innerHTML = "Playing Video" ;
+                    document.getElementById("saveProgressFill").style.width = (lastKnownCurrentFrame / lastKnownFrameEnd * 100) + "%" ;
+                    document.getElementById("saveProgress").lastChild.textContent = "Playback Position" ;
+                    document.getElementById("record").classList.add("disabled") ; // disable the record button
+                    break ;
+
+                case "filesave":
+                    if (lastKnownVideoState != "filesave")
+                        document.getElementById("saveProgressFill").style.width = 0 ;
+                    document.getElementById("saveProgress").classList.remove("hidden") ; // show the progress bar
+                    document.getElementById("videoStateOverlay").innerHTML = "Saving Video" ;
+                    //document.getElementById("record").classList.add("disabled") ; // disable the record button
+
+                    setCookie("sr", 0) ; // saved the video (don't need to warn next time I record)
+                    break ;
             }
+            
+
+            var fileName = document.getElementById("fileName").value ;
     
-            if (fileName != "") // a file name was given
-                request += ', "filename": "' + fileName + '"' ;
-    
-            request += '}' ; // finish off the request
-    
-            if (DebugOnOff)
-                document.getElementById("debugger2").innerHTML = " ----- Here is the request: " + request ;
-    
-            dataSender ("startFilesave", request) ; // actually save the file
-        }
-        else {
-            if (StorageLocation == "")
-                document.getElementById("errorWhileSavingBox").firstChild.textContent = "Cannot save video. Please select a storage device." ;
-            else
-                document.getElementById("errorWhileSavingBox").firstChild.textContent = "Nothing to save. Please record something first." ;
-    
-            document.getElementById("popUpBackground").classList.remove("hidden") ;
-            document.getElementById("errorWhileSavingBox").classList.remove("hidden") ; // show the reason why you're unable to save
-        }
+            if ( (StorageLocation != "") && (lastKnownFrameEnd > 1) ) { // storage location set and some frames recorded
+                var request = '{"device": "' + StorageLocation + '", "format": '
+                switch (document.getElementById("saveFormat").firstChild.textContent) {
+                    case "CinemaDNG (raw)":
+                        request += '"dng"' ; // use cinemaDNG files
+                        break ;
+        
+                    case "TIFF (images)":
+                        request += '"tiff"' ; // use tiff images
+                        break ;
+        
+                    case "TIFF RAW (images)":
+                        request += '"tiffRaw"' ; // use tiff RAW images
+                        break ;
+        
+                    case "H.264 (mp4)":
+                    default:
+                        request += '"h264"' ; // use h.264 format (mp4)
+                        break ;
+                
+                }
+        
+                if (fileName != "") // a file name was given
+                    request += ', "filename": "' + fileName + '"' ;
+        
+                request += '}' ; // finish off the request
+        
+                $.ajax({
+                    url: first_camera_addr+"/control/startFilesave",
+                    data: request,
+                    method: "POST",
+                    contentType: "application/json",
+                    timeout: 10000
+                });
+
+                //dataSender ("startFilesave", request);
+            }
+            else {
+                if (StorageLocation == "")
+                    document.getElementById("errorWhileSavingBox").firstChild.textContent = "Cannot save video. Please select a storage device." ;
+                else
+                    document.getElementById("errorWhileSavingBox").firstChild.textContent = "Nothing to save. Please record something first." ;
+        
+                document.getElementById("popUpBackground").classList.remove("hidden") ;
+                document.getElementById("errorWhileSavingBox").classList.remove("hidden") ; // show the reason why you're unable to save
+            }
+        })
     }
 
     /* Help Functions */
@@ -616,13 +789,10 @@ $(function() {
                         "smb": "Network Drive"
                     };
     var StorageLocation = "";
-    var lastKnownVideoState = "live";
-    var lastKnownFrameEnd = 1;
-    var lastKnownCurrentFrame = 0;
 
     // Choose Save Location
-    function useStorageLocation(key) {
-        console.log("use Storage Location");
+    //// To call function from HTML, write it in such format (?)
+    useStorageLocation = function(key) {
         if (key in StorageInfo) {
             var temp = "" ;		 
             if (key in StorageNames)
@@ -653,6 +823,8 @@ $(function() {
             document.getElementById("saveVideoButton").classList.add("disabled") ; // disable the save button
         }
     }
+                    
+    
 
     function externalStorage() {
         $.ajax({
@@ -680,7 +852,7 @@ $(function() {
                 {
                     if (key != "size")
                     {
-                        var temp = '<a id=' + key +'>';
+                        var temp = '<a onclick=\'useStorageLocation("' + key + '")\'>';
                         if (key in StorageNames)
                             temp += StorageNames[key];
                             
@@ -713,27 +885,15 @@ $(function() {
 
                 document.getElementById("saveVideoButton").classList.add("disabled");
             }
-            list.innerHTML += '<a id="refreshdropdown">Refresh</a>';
+            list.innerHTML += '<a id="refreshDropDown">Refresh</a>';
         })
     }
-
-    var StorageNames = {"sda1": "USB / SATA",
-                        "mmcblk1p1": "SD Card",
-                        "nfs": "Network Drive",
-                        "smb": "Network Drive"
-                    };
-                    
-    $("#sda1").on("click", function() {
-        console.log(this.id);
-        useStorageLocation(this.id);
-    });
-    
 
     // Update webpage for video display & parameters
     function updateScreen(){
         $("#imageDisplay").attr("src", first_camera_addr+"/cgi-bin/screenCap?" + Math.random());
-        getResolution();
-        getExposure();
+        //getResolution();
+        //getExposure();
         //externalStorage();
     }
 
@@ -765,15 +925,9 @@ $(function() {
 
     /* Connect functions with components */
     // Record/Stop Button
-    $("#btn_toggle_record").on("click", function(){
-        var obj_btn = $(this);
-
-        if(obj_btn.hasClass("start")){
-            startRecording("toggle");
-        }else if(obj_btn.hasClass("stop")){
-            stopRecording("toggle");
-        }
-    });
+    $("#record").on("click", function(){
+        toggler(this);
+    })
 
     // Apply Resolution, Frame Rate
     //// Change Resolution
@@ -792,7 +946,7 @@ $(function() {
     });
     //// Apply Changes
     $("#applyButton").on("click", function(){
-        setResFrameRate();
+        applyResolution();
     });
 
     // Set Exposure Time, Percent, Degrees
@@ -833,7 +987,8 @@ $(function() {
 
     // Save Videos
     //// Location Refresh
-    $("#refreshdropdown").on("click", function(){
+    $("#refreshDropDown").on("click", function(){
+        console.log("refresh");
         externalStorage();
         updateScreen();
     });
