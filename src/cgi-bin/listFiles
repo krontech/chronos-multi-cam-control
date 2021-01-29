@@ -1,0 +1,64 @@
+#!/bin/bash
+
+## give back a list of the files from a provided disk
+
+## Nicholas Faliszewski
+## March 2020
+
+echo "Content-type: application/json"
+echo ""
+
+## check what is mounted
+
+content=$(df) ## check what is mounted
+
+input=${QUERY_STRING%":"*} ## trim off anything after the colon
+
+
+if [[ "$content" == *"$input"* ]]
+then
+	number=0
+
+	shopt -s nullglob ## prevent the loop from returning "*.something" when it doesn't find something
+
+	echo "{"
+	for fileName in /media/$input/*{".mp4","/",".dng",".tiff"}
+#	for fileName in /media/$input/*.{"mp4","zip"}
+	do
+		if [ "${fileName: -1}" == "/" ] ## directory?
+		then
+
+			fileName=${fileName%'/'*} ## discard the slash at the end of the directory name
+			fileName=${fileName##*'/'} ## discard the path to the files (leave just the folder name)
+			if [ "$fileName" == "System Volume Information" ]
+			then
+				continue
+			fi
+			echo "	\"folder$number\": {"
+			insideNumber=0
+			echo "		\"folderName\": \"$fileName\"," ## print the foldername in json format
+			for insideFiles in /media/$input/"$fileName"/*{".dng",".tiff"}
+			do
+				insideFiles=${insideFiles##*'/'} ## discard the path to the files (leave just the filename)
+				echo "		\"file$insideNumber\": \"$insideFiles\"," ## print the filenames in json format
+
+				(( insideNumber=insideNumber+1 ))
+			done
+			echo "		\"totalFileCount\": $insideNumber"
+			echo "	}," ## finish off the json string
+
+		else ## not a directory
+			fileName=${fileName##*'/'} ## discard the path to the files (leave just the filename)
+			echo "	\"file$number\": \"$fileName\"," ## print the filenames in json format
+		fi
+
+		(( number=number+1 ))
+	done
+
+	echo "	\"totalFileCount\": $number"
+	echo "}"
+
+
+else
+	echo "Media device not found. Is it connected?"
+fi

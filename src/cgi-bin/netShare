@@ -1,0 +1,134 @@
+#!/bin/bash
+
+## This file is used to connect the camera to a network shared storage location.
+
+## Nicholas Faliszewski
+## April 2020
+
+
+backupIFS=$IFS
+IFS="=&"
+params=($QUERY_STRING)
+IFS=$backupIFS
+
+echo "Content-type: application/json"
+echo "Cache-Control: no-cache"
+echo ""
+
+
+if [[ "${params[0]}" == "nfs" ]]
+then
+
+	if [[ "${params[1]}" == *"."*"."*"."* ]] ## check for IP address
+	then
+		if [[ "${params[2]}" == "mount" ]] && [[ "${params[3]}" == *"/"* ]] ## check for mount location
+		then
+			## ask another script to run the actual mount commands (that other script will watch this "mountRequest" file for changes)
+			echo "Please mount: ${params[1]} ${params[3]} at /media/nfs" > /tmp/mountRequest.nf
+
+		else
+			echo "{\"error\": \"Did not get the remote folder: ${params[2]}  ${params[3]}\"}"
+			exit ## did not find a mount point (or not specified correctly), so don't continue with this program
+		fi
+
+	elif [[ "${params[1]}" == "unmount" ]] ## unmount the shared folder / drive
+	then
+#		echo "unmounting nfs location"
+		echo "please unmount: /media/nfs" > /tmp/mountRequest.nf
+
+	elif [[ "${params[1]}" == "test" ]] ## test that the shared folder / drive is writable
+	then
+#		echo "testing nfs location"
+		echo "please test: /media/nfs" > /tmp/mountRequest.nf
+
+	else
+		echo "{\"error\": \"Did not find address: ${params[1]}\"}"
+		exit ## did not find an address, so don't continue with this program
+	fi
+
+
+#	echo "mount params are: ${params[1]}:${params[3]} /media/nfs"
+
+	tries=0
+
+	while [ $tries -lt 25 ] ## keep checking for a total of about 5 seconds
+	do
+		sleep 0.2 ## wait a short time between checking for completion
+		gotback=$(cat /tmp/mountRequest.nf)
+
+		if [[ "$gotback" == *"failed"* ]]
+		then
+			echo "{\"Status\": \"failed\", \"error\": \"$gotback\"}"
+			break
+		elif [[ "$gotback" == *"successfully"* ]]
+		then
+			echo "{\"Status\": \"succeeded\"}"
+			break
+		fi
+		((tries++)) ## increment number of tries
+	done
+
+
+elif [[ "${params[0]}" == "smb" ]]
+then
+
+	if [[ "${params[1]}" == *"."*"."*"."* ]] ## check for IP address
+	then
+		if [[ "${params[2]}" == "mount" ]] && [[ "${params[3]}" == *"/"* ]] ## check for mount location
+		then
+			## ask another script to run the actual mount commands (that other script will watch this "mountRequest" file for changes)
+			echo "Please mount: ${params[1]} ${params[3]} at /media/smb ${params[4]} ${params[5]}" > /tmp/mountRequest.nf
+
+		else
+			echo "{\"error\": \"Did not get the remote folder: ${params[2]}  ${params[3]}\"}"
+			exit ## did not find a mount point (or not specified correctly), so don't continue with this program
+		fi
+
+	elif [[ "${params[1]}" == "unmount" ]] ## unmount the shared folder / drive
+	then
+#		echo "unmounting smb location"
+		echo "please unmount: /media/smb" > /tmp/mountRequest.nf
+
+	elif [[ "${params[1]}" == "test" ]] ## test that the shared folder / drive is writable
+	then
+#		echo "testing smb location"
+		echo "please test: /media/smb" > /tmp/mountRequest.nf
+
+	else
+		echo "{\"error\": \"Did not find address: ${params[1]}\"}"
+		exit ## did not find an address, so don't continue with this program
+	fi
+
+
+#	echo "mount params are: ${params[1]}:${params[3]} ${params[4]} ${params[5]} /media/smb"
+
+	tries=0
+
+	while [ $tries -lt 25 ] ## keep checking for a total of about 5 seconds
+	do
+		sleep 0.2 ## wait a short time between checking for completion
+		gotback=$(cat /tmp/mountRequest.nf)
+
+		if [[ "$gotback" == *"failed"* ]]
+		then
+			echo "{\"Status\": \"failed\", \"error\": \"$gotback\"}"
+			break
+		elif [[ "$gotback" == *"successfully"* ]]
+		then
+			echo "{\"Status\": \"succeeded\"}"
+			break
+		fi
+		((tries++)) ## increment number of tries
+	done
+
+else
+
+	echo "{\"error\": \"Please start with a type of share (nfs or smb)\","
+	echo "\"info\": \"The command should be of the form: netShare?nfs=192.168.12.22&mount=/drive/folder[[&uname=pwd]]\"}"
+
+fi
+
+#echo "length is: ${#params[@]}"
+
+
+

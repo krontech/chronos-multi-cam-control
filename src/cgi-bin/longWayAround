@@ -1,0 +1,55 @@
+#!/bin/bash
+
+## This file is just used to compensate for some commands that do not work correctly when using cam-json.
+## Specifically, cam-json does not take in arrays properly, so this program is used to go around it with gdbus.
+
+## Nicholas Faliszewski
+## April 2020
+
+
+echo "Content-type: application/json"
+echo "Cache-Control: no-cache"
+echo ""
+
+inputPostData=$(cat) ## get data from the POST buffer
+
+methodName=${inputPostData%%':'*} ## keep only the parts up to the colon
+methodName=${methodName#*'{'} ## trim off curly brace
+
+array=${inputPostData##*'['} ## keep only the array and onwards
+array=${array%%']'*} ## trim off whatever's after the closing square bracket
+
+backupIFS=$IFS
+IFS=", " ## define how to separate elements
+arrayElements=($array) ## split to an array
+IFS=$backupIFS ## restore the default separators
+
+
+if [ "$methodName" == "\"wbColor\"" ] && [ "${#arrayElements[@]}" == "3" ] ## check the method and the length of the array
+then
+	request="{'wbColor': <[$array]>}" ## white balance request
+
+	 ## use the gdbus program to write the method and array
+	output=$(gdbus call --system --dest ca.krontech.chronos.control --object-path /ca/krontech/chronos/control --method ca.krontech.chronos.control.set "$request")
+#	echo " - - - - - The request was: $request - - - The output was: $output"
+	output=${output//[><\(]/ } ## trim out some unneeded characters
+	output=${output%',)'*} ## trim off the ending comma and bracket
+	output=${output//["'"]/"\""} ## replace single quotes with double quotes
+	echo "$output" ## return the result
+
+elif [ "$methodName" == "\"colorMatrix\"" ] && [ "${#arrayElements[@]}" == "9" ] ## check the method and the length of the array
+then
+	request="{'colorMatrix': <[$array]>}" ## color matrix request
+
+	 ## use the gdbus program to write the method and array
+	output=$(gdbus call --system --dest ca.krontech.chronos.control --object-path /ca/krontech/chronos/control --method ca.krontech.chronos.control.set "$request")
+#	echo " - - - - - The request was: $request - - - The output was: $output"
+	output=${output//[><\(]/ } ## trim out some unneeded characters
+	output=${output%',)'*} ## trim off the ending comma and bracket
+	output=${output//["'"]/"\""} ## replace single quotes with double quotes
+	echo "$output" ## return the result
+else
+	echo "{'error': 'unrecogized command'}"
+fi
+
+

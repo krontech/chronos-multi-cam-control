@@ -1,0 +1,62 @@
+#!/bin/bash
+
+## give back a file that is asked for (if it is on one of the media devices)
+
+## the desired format for the input is: ip/cgi-bin/pleaseGiveMeAFile?location=deviceName&fileName=fileName
+
+## Nicholas Faliszewski
+## March 2020
+
+
+backupIFS=$IFS
+IFS="=&"
+params=($QUERY_STRING)
+IFS=$backupIFS
+
+if [[ "${params[0]}" == "location" ]] && [[ "${params[2]}" == "fileName" ]]
+then
+	if [[ "${params[3]}" == *".mp4" ]]
+	then
+		echo "Content-Type: video/mp4"
+		fileSize=$(stat -c %s /media/"${params[1]//%20/ }"/"${params[3]//%20/ }")
+		echo "Content-Length: $fileSize"
+		echo "Content-Disposition: attachment; filename=${params[3]//%20/ }"
+		echo "Cache-Control: no-cache"
+		echo ""
+
+		cat /media/"${params[1]//%20/ }"/"${params[3]//%20/ }" ## return the requested file
+
+	elif [[ "${params[3]}" == *".dng" ]]
+	then
+		echo "Content-Type: image/dng"
+		fileSize=$(stat -c %s /media/"${params[1]//%20/ }"/"${params[3]//%20/ }")
+		echo "Content-Length: $fileSize"
+		echo "Content-Disposition: attachment; filename=${params[3]##*'/'//%20/ }"
+		echo ""
+		cat /media/"${params[1]//%20/ }"/"${params[3]//%20/ }" ## return the requested file
+
+	elif [[ "${params[3]//%20/ }" == *".tiff" ]]
+	then
+		echo "Content-Type: image/tiff"
+		fileSize=$(stat -c %s /media/"${params[1]//%20/ }"/"${params[3]//%20/ }")
+		echo "Content-Length: $fileSize"
+		echo "Content-Disposition: attachment; filename=${params[3]##*'/'//%20/ }"
+		echo ""
+		cat /media/"${params[1]//%20/ }"/"${params[3]//%20/ }" ## return the requested file
+
+	else
+		echo "Content-Type: text/plain"
+		echo ""
+
+		echo "I don't recognize that file type"
+		echo "I saw a request for: ${params[3]//%20/ }"
+
+	fi
+else
+	echo "Content-Type: text/plain"
+	echo ""
+
+	echo "unable to get that file; are you sure you requested it properly?"
+	echo "the correct format is: ip/cgi-bin/pleaseGiveMeAFile?location=deviceName&fileName=nameOfFile"
+	echo ""
+fi

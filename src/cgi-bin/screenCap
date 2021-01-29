@@ -1,0 +1,16 @@
+#!/bin/bash
+
+## return the screenshot image of what the camera sees
+
+## Nicholas Faliszewski
+## February 2020
+
+echo "Status: 200"
+echo "Content-Type: image/jpg"
+echo ""
+
+
+ ## try to copy the image, but only wait for .2 seconds; otherwise, just return the last-used screenshot
+flock -x -w 0.02 /tmp/cam-screencap.jpg -c "cp /tmp/cam-screencap.jpg /tmp/tmp.jpg && mv /tmp/tmp.jpg /tmp/screenShot.jpg"
+
+cat /tmp/screenShot.jpg ## return the image data

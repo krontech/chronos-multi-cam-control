@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/prism.css" />
+
+    <title>Chronos API Documentation</title>
+
+    <!-- Fixup to scroll passed the floating navbar -->
+    <style>
+      div.container {
+        padding-top: 75px;
+      }
+      @media only screen and (min-width : 992px) {
+        .container { max-width: 1200px; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">
+        <img src="/kt-logo-white.svg" width="36" height="36">
+        Chronos API Documentation
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="#section-overview">Overview</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbar-methods-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Methods</a>
+            <div class="dropdown-menu" id="navbar-methods" aria-labelledby="navbar-methods-dropdown">
+              <!-- Populated by Javascript -->
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#section-events">Events</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#section-parameters">Parameters</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- API Overview -->
+    <div class="container" id="section-overview">
+      <h1>Overview</h1>
+      <p>Control of the Chronos camera is provided as a REST API, which is a type of web API,
+        involving requests and responses, not too unlike visiting a web page. You make a request
+        to a resource stored stored on a server, and the server responds with the requested
+        information. The protocol used to transport the data is HTTP. "REST" stands for
+        Representational State Transfer.</p>
+      
+      <img src="api-diagram.png"/>
+
+      <p>The Chronos API provides access to the camera configuration, settings and related data
+        describing the camera's hardware and available features. The base address of the Chronos
+        API is <code>http://192.168.12.1/control</code> when accessing the camera via its USB
+        interface. This API provides a set of endpoints, each with its own unique path.
+      </p>
+    </div>
+
+    <!-- API Methods -->
+    <div class="container" id="section-methods">
+      <h1>Methods</h1>
+      <p>API methods are procedures that may start a procedure, or change the camera state. Since
+        these operations do not fit well into the REST model, they are performed using the HTTP
+        POST method, with their arguments provided in JSON format as the HTTP POST body.</p>
+      
+      <h2>describe</h2>
+      <p>The <code>describe</code> method is accessible by the <code>/control/describe</code>
+        endpoint, and returns a description of the available parameters and methods that can be
+        accessed via the Chronos API. This method is used to generate most of the reference
+        information on this page.</p>
+
+      <figure class="highlight"><pre><code class="language-javascript">
+user@example.com:~$ curl http://192.168.12.1/control/describe
+{
+    "cameraMemoryGB": {
+        "type": "d",
+        "get": true,
+        "set": false,
+        "notifies": false,
+        "doc": "int: Amount of video memory attached to the FPGA in GiB"  
+    }
+    ...
+}
+        </code></pre></figure>
+        
+      <table class="table table-striped table-sm">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>type</code></td><td>D-Bus type signature for the parameter's value.</td></tr>
+          <tr><td><code>get</code></td><td><code>true</code> when the parameter can be retrieved using the <code>get</code> method</td></tr>
+          <tr><td><code>set</code></td><td><code>true</code> when the parameter can be changed using the <code>set</code> method</td></tr>
+          <tr><td><code>notifies</code></td><td><code>true</code> when changes to the parameter are reported using the <code>notify</code> event</td></tr>
+          <tr><td><code>doc</code></td><td>User documentation string, explaining the parameter's meaning and function</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- API Event Stream -->
+    <div class="container" id="section-events">
+      <h1>Events</h1>
+      <p>With server-sent-events it is possible for the camera to send asynchronous notifications
+        when long running operations complete, or parameters change in the API. This is done by
+        pushing events to the web browser.</p>
+
+      <p>Using Javascript, a browser can subscribe to the HTML5 Server-Sent-Events stream by
+        creating a new <code>EventSource</code> on the <code>/control/subscribe</code> endpoint,
+        and then using the <code>addEventListener</code> function to receive events.</p>
+      
+      <figure class="highlight"><pre><code class="language-javascript">
+function onNotifyEvent(data) {
+  document.getElementById("result").innerText = JSON.parse(data);
+}
+var evtSource = new EventSource("/control/subscribe");
+evtSource.addEventListener("notify", function(event) {onNotifyEvent(event.data);});
+      </code></pre></figure>
+
+      <h2>notify</h2>
+      <p>The <code>notify</code> event is generated whenever a mutable parameter in the API
+        changes its value, and the data sent with the event will contain a dictionary of the
+        updated parameter values.</p>
+      
+      <figure class="highlight"><pre><code class="language-javascript">
+user@example.com:~$ curl http://192.168.12.1/control/subscribe
+event: notify
+data:{
+data:   "calSuggested": false,
+data:   "state": "analogcal"
+data:}
+      </code></pre></figure>
+
+      <h2>complete</h2>
+      <p>The <code>complete</code> event is generated whenever an asynchronous procedure has run
+        to completion, and will contain the results of the procedure. If the procedure completed
+        successfully then the data will contain a dictionary with the name of the method the
+        completed, and the new state of the camera. If the procedure completed with an error, then
+        the dictionary will also contain an <code>error</code> with the type of error that occured,
+        and optionally a <code>message</code> with a human-readable description of the error.</p>
+
+      <figure class="highlight"><pre><code class="language-javascript">
+  user@example.com:~$ curl http://192.168.12.1/control/subscribe
+  event: complete
+  data:{
+  data:   "state": "idle",
+  data:   "method": "startWhiteBalance",
+  data:   "error": "SignalClippingError",
+  data:   "message": "Signal clipping, reference image is too bright for white balance"
+  data:}
+      </code></pre></figure>
+
+      <table class="table table-striped table-sm">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>state</code></td><td>The new state of the camera after completing the asynchronous call</td></tr>
+          <tr><td><code>method</code></td><td>The name of the asynchronous API call that has completed</td></tr>
+          <tr><td><code>error</code></td><td>A canonical name for an error that occured during the asynchronus call (optional)</td></tr>
+          <tr><td><code>message</code></td><td>A human-readable string describing the cause of the error</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Big list of API parameters -->
+    <div class="container" id="section-parameters">
+      <h1>Parameters</h1>
+      <p>The Chronos API exposese a set of parameters that are accessible using a REST API.
+        Parameters are accessed via standard HTTP requests in JSON format, and where possible
+        the Chronos API uses appropriate verbs for each action:</p>
+
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Verb</th>
+              <th>Endpoint</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GET</td>
+              <td><code>/control/p/{name}</code></td>
+              <td>Retrieve a single parameter by name if the <code>r</code> flags is set.</td>
+            </tr>
+            <tr>
+              <td>PUT</td>
+              <td><code>/control/p/{name}</code></td>
+              <td>Set the value of a single parameter by name if the <code>w</code> flag is set.</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td><code>/control/p</code></td>
+              <td>Update a collection parameters together</td>
+            </tr>
+          </tbody>
+        </table>
+        </p>
+
+        <p>Parameters will have one or more flags describing the ways in which they can be manipulated
+          using the REST API:
+          <ul>
+            <li><code>r</code> flag: The parameter's value can be retrieved using the HTTP GET verb.</li>
+            <li><code>w</code> flag: The parameter's value can be updated using the HTTP SET verb.</li>
+            <li><code>n</code> flag: Changes to the parameter's value will be reported using the <code>notify</code> event.</li>
+          </ul>
+        </p>
+
+        <table class="table table-striped">
+        <thead>
+          <tr class="row">
+            <th class="col-2">Name</th>
+            <th class="col-1">Type</th>
+            <th class="col-1 text-right">Flags</th>
+            <th class="col-8">Description</th>
+          </tr>
+        </thead>
+        <tbody id="parameters">
+          <!-- To be filled in by javascript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="/js/jquery-3.3.1.js" crossorigin="anonymous"></script>
+    <script src="/js/popper.min.js" crossorigin="anonymous"></script>
+    <script src="/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="/js/prism.js"></script>
+    
+    <!-- Generate the API documentation using JavaScript -->
+    <script>
+      function updateValues(result) {
+        for (let name in result) {
+          let button = document.getElementById("value-button-" + name);
+          let datacell = document.getElementById("value-data-" + name);
+          let vtext = JSON.stringify(result[name], null, 2);
+
+          if (datacell) {
+            /* Complex values should be displayed in a collapsable card */
+            let card = document.createElement("div");
+            let pre = document.createElement("pre");
+            let code = document.createElement("code");
+            card.setAttribute("class", "card card-body");
+            code.setAttribute("class", "language-javascript");
+            pre.appendChild(code);
+            card.appendChild(pre);
+
+            datacell.innerHTML = "";
+            datacell.appendChild(card);
+
+            /* Fixup for Prism bug: https://github.com/PrismJS/prism/issues/1764  */
+            code.innerHTML = vtext.replace("<br>","\n");
+            /* Manually invoke Prism for syntax highlighting. */
+            Prism.highlightAllUnder(card);
+
+            button.innerText = name + " => ...";
+          }
+          else {
+            button.innerText = name + " => " + vtext;
+          }
+        }
+      }
+
+      function describeType(type) {
+        if (!(typeof type === 'string' || type instanceof String)) {
+          return "unknown";
+        }
+
+        if (type == "a{sv}") return "dictionary";
+        if (type == "i") return "int";
+        if (type == "s") return "string";
+        if (type == "b") return "boolean";
+        if (type == "d") return "float";
+        
+        /* If the type is an array, use some recursion. */
+        if (type.charAt(0) == 'a') {
+          return "array[" + describeType(type.slice(1)) + "]";
+        }
+
+        /* Otherwise, we can't make sense of this D-Bus type */
+        return "unknown";
+      }
+
+      function escapeDocstring(docstring) {
+        /* If there are backtick quoted sections, turn them into code tags instead. */
+        const btickRegex = /\`([^`]*)\`/gi;
+        return docstring.replace(btickRegex, '<code>$1</code>')
+      }
+
+      function buildArgTable(data, typename) {
+        let argtable = document.createElement("table");
+        let arghead = document.createElement("thead");
+        let argbody = document.createElement("tbody");
+        arghead.innerHTML = "<tr><th>" + typename + "</th><th>Type</th><th>Description</th></tr>";
+        argtable.appendChild(arghead);
+        argtable.appendChild(argbody);
+        argtable.setAttribute("class", "table table-striped table-sm");
+
+        let names = Object.keys(data).sort();
+        for (let i = 0; i < names.length; i++) {
+          let row = document.createElement("tr");
+          let argdata = data[names[i]];
+          row.innerHTML += "<td class=\"text-nowrap\"><code>" + names[i] + "</code></td>";
+          row.innerHTML += "<td>" + argdata['type'] + "</td>";
+          row.innerHTML += "<td>" + escapeDocstring(argdata['doc']) + "</td>";
+
+          argbody.appendChild(row);
+        }
+
+        return argtable;
+      }
+
+      function buildParam(table, name, data) {
+        /* Create the table row for the parameter*/
+        let row = table.insertRow();
+        row.id = name;
+        row.setAttribute("class", "row");
+
+        /* Describe the parameter. */
+        let ncell = row.insertCell(0);
+        ncell.innerHTML = "<code>" + name + "</code>";
+        ncell.setAttribute("class", "col-2 text-nowrap");
+
+        let tcell = row.insertCell(1);
+        tcell.innerHTML = "<code>" + describeType(data['type']) + "</code>";
+        tcell.setAttribute("class", "col-1 text-nowrap");
+
+        let fcell = row.insertCell(2);
+        fcell.setAttribute("class", "col-1  text-right");
+        fcell.innerHTML = "<code>" + (data.get ? "r" : "-") + (data.set ? "w" : "-") + (data.notifies ? "n" : "-") + "</code>";
+
+        let dcell = row.insertCell(3);
+        if (data.hasOwnProperty('doc')) {
+          let paragraph = document.createElement("p");
+          paragraph.innerHTML = escapeDocstring(data.doc);
+          dcell.appendChild(paragraph);
+        }
+        dcell.setAttribute("class", "col-8");
+
+        /* If a detailed descrition was provided, render it as multiple paragraphs. */
+        if (data.hasOwnProperty("description")) {
+          let desc = data.description.split("\n");
+          for (let i = 0; i < desc.length; i++) {
+            let paragraph = document.createElement("p");
+            paragraph.innerHTML = escapeDocstring(desc[i]);
+            dcell.appendChild(paragraph);
+          }
+        }
+
+        /* If detailed argument values are described, list them. */
+        if (data.hasOwnProperty("args")) {
+          dcell.appendChild(buildArgTable(data.args, "Values"));
+        }
+        else if (data.hasOwnProperty("returns")) {
+          dcell.appendChild(buildArgTable(data.returns, "Values"));
+        }
+        /* If the description includes enumerations, list them. */
+        if (data.hasOwnProperty("enum")) {
+          let list = document.createElement("ul");
+          for (const key of Object.keys(data.enum)) {
+            let item = document.createElement("li");
+            item.innerHTML = "<b>" + key + "</b>: " + escapeDocstring(data.enum[key]);
+            list.appendChild(item);
+          }
+          dcell.appendChild(list);
+        }
+
+        /* Create a button to display the parameter value */
+        let vpara = document.createElement("p");
+        let vbutton = document.createElement("button");
+        vbutton.setAttribute("class", "btn btn-secondary btn-sm");
+        vbutton.setAttribute("type", "button");
+        vbutton.id = "value-button-" + name;
+        vbutton.innerText = name + " => unknown";
+        vpara.appendChild(vbutton);
+        dcell.appendChild(vpara);
+
+        /* Refresh the value button when clicked. */
+        vbutton.onclick = function() {
+          fetch("/control/p/" + name, {
+            cache: "no-cache"
+          }).then((response) => response.json()).then((data) => { updateValues(data); })
+        }
+
+        /* For complex types, create a collapseable card to hold the value */
+        if (data['type'].length > 1) {
+          vbutton.setAttribute("data-toggle", "collapse");
+          vbutton.setAttribute("aria-expanded", "false");
+          vbutton.setAttribute("data-target", "#value-data-" + name);
+
+          let collapse = document.createElement("div");
+          collapse.setAttribute("class", "collapse");
+          collapse.setAttribute("id", "value-data-" + name);
+          dcell.appendChild(collapse);
+        }
+      }
+
+      function buildAPIDocs(result) {
+        let ptable = document.getElementById("parameters");
+        let keys = Object.keys(result).sort();
+        keys.forEach(function(name) { buildParam(ptable, name, result[name])} );
+
+        /* Retrieve the current values for all the parameters */
+        fetch('/control/get', {
+          body: JSON.stringify(keys),
+          headers: {"Content-Type": "application/json"},
+          method: "POST",
+          cache: "no-cache",
+        }).then((response) => response.json()).then((data) => { updateValues(data); })
+      }
+
+      function buildCall(section, name, data) {
+        let header = document.createElement("h2");
+        header.innerText = name;
+        section.appendChild(header);
+
+        /* Create a brief description of the API method */
+        let paragraph = document.createElement("p");
+        paragraph.innerHTML = "The <code>" + name + "</code> method is accessible by the <code>/control/" + name + "</code> endpoint.";
+        paragraph.innerHTML += "This method " + data['brief'].charAt(0).toLowerCase() + data['brief'].slice(1);
+        section.appendChild(paragraph);
+
+        /* If a detailed descrition was provided, render it as multiple paragraphs. */
+        if (data.hasOwnProperty("description")) {
+          let desc = data.description.split("\n");
+          for (let i = 0; i < desc.length; i++) {
+            let paragraph = document.createElement("p");
+            paragraph.innerHTML = escapeDocstring(desc[i]);
+            section.appendChild(paragraph);
+          }
+        }
+
+        /* If arguments exists, build a table to describe them */
+        if (data.hasOwnProperty("args")) {
+          let paragraph = document.createElement("p");
+          paragraph.innerHTML = "The <code>" + name + "</code> method accepts the following arguments:";
+          section.appendChild(paragraph);
+          section.appendChild(buildArgTable(data.args, "Argument"));
+        }
+
+        /* If return datum exists, build a table to describe them */
+        if (data.hasOwnProperty("returns")) {
+          let paragraph = document.createElement("p");
+          paragraph.innerHTML = "The <code>" + name + "</code> method returns a dictionary with the following members:";
+          section.appendChild(paragraph);
+          section.appendChild(buildArgTable(data.returns, "Return Value"));
+        }
+
+        /* If this function yeilds, then it actually an asychronous method. */
+        /* TODO: This is a leaky abstraction, yielding is a python internal detail */
+        if (data.hasOwnProperty("yields")) {
+          let paragraph = document.createElement("p");
+          paragraph.innerHTML  = "This method starts an asynchronous process that changes the camera's state ";
+          paragraph.innerHTML += "and executes in the background. The results of the <code>" + name + "</code> ";
+          paragraph.innerHTML += "method will be returned to the user in the <code>complete</code> event, ";
+          paragraph.innerHTML += "with a <code>method</code> equal to <code>" + name + "</code>.";
+          section.appendChild(paragraph);
+        }
+
+        /* Add navbar links to the method description */
+        let navbar = document.getElementById("navbar-methods");
+        let link = document.createElement("a");
+        link.setAttribute("class", "dropdown-item");
+        link.setAttribute("href", "#" + name);
+        link.innerText = name;
+        navbar.appendChild(link);
+      }
+
+      function buildAPICalls(result) {
+        let section = document.getElementById("section-methods");
+        keys = Object.keys(result).sort();
+        keys.forEach(function(name) {
+          let div = document.createElement("div");
+          div.setAttribute("class", "container");
+          div.setAttribute("id", name);
+          section.appendChild(div);
+          buildCall(div, name, result[name])
+        });
+      }
+
+      /* Build the list of parameters and callable methods */
+      $.getJSON("/control/availableCalls", buildAPICalls);
+      $.getJSON("/control/describe", buildAPIDocs);
+
+      /* Subscribe to the event stream to show parameter value changes. */
+      evtSource = new EventSource("/control/subscribe");
+      evtSource.addEventListener("notify", function(event) {updateValues(JSON.parse(event.data));});
+    </script>
+  </body>
+</html>

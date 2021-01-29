@@ -1,0 +1,48 @@
+#!/bin/bash
+
+## give back a list of the files from a provided disk
+
+## Nicholas Faliszewski
+## April 2020
+
+
+#input=${QUERY_STRING%%":"*} ## trim off anything after the colon
+input=$QUERY_STRING
+input=${input%%"&"*} ## trim off anything after &
+
+if [[ "$input" == *"nfs"* ]] ## using network storage
+then
+	content=$(df | grep "nfs") ## check if the network folder is mounted (and get usage info)
+
+else ## using local storage
+	## check what is mounted
+	content=$(df "/dev/$input") ## check if the filesystem is mounted (and get usage info)
+fi
+
+if [[ "$content" == *"$input"* ]]
+then
+	echo "Content-type: application/json"
+	echo ""
+
+	backupIFS=$IFS
+	IFS=" " ## define how to separate elements (space)
+	arrayElements=($content) ## split to an array
+	IFS=$backupIFS ## restore the default separators
+
+	## Array Elements will be like this:
+	## FileSystem	1K-blocks	Used	Available	Use%	Mounted on
+	##		[0]			[1]		[2]			[3]		[4]			[5]
+	##		[6]			[7]		[8]			[9]		[10]		[11]
+	if [[ "$input" == *"nfs"* ]] ## using nfs
+	then
+		echo "{\"size\": ${arrayElements[1]}, \"used\": ${arrayElements[2]}, \"available\": ${arrayElements[3]}, \"usedPercent\": ${arrayElements[4]%'%'*}}"
+	else
+		echo "{\"size\": ${arrayElements[7]}, \"used\": ${arrayElements[8]}, \"available\": ${arrayElements[9]}, \"usedPercent\": ${arrayElements[10]%'%'*}}"
+		 ## print the stats of the filesystem
+	fi
+else
+	echo "Content-Type: text/plain"
+	echo ""
+
+	echo "Media device not found. Is it connected?"
+fi
