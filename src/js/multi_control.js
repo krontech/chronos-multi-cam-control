@@ -730,7 +730,10 @@ $(function() {
 
     externalStorage = function() {
         findexternalStorage();
+        console.log(camStorage);
 
+        var sdaNumber = 0;
+        var sdNumber = 0;
         var smbNumber = 0;
         var nfsNumber = 0;
 
@@ -744,6 +747,12 @@ $(function() {
             if (temp.indexOf("nfs") > -1) {
                 nfsNumber++;
             }
+            if (temp.indexOf("sda1") > -1) {
+                sdaNumber++;
+            }
+            if (temp.indexOf("mmcblk1p1") > -1) {
+                sdNumber++;
+            }
         }
 
         if (smbNumber == camStorage.length) {
@@ -754,11 +763,19 @@ $(function() {
             // All Valid Cameras are connected to NFS
             saveDevices.push("nfs");
         }
+        if (sdaNumber == camStorage.length) {
+            saveDevices.push("sda1");
+        }
+        if (sdNumber == camStorage.length) {
+            saveDevices.push("mmcblk1p1");
+        }
+
+        console.log(saveDevices);
 
         // Only allow to use SMB & NFS to save
         if (saveDevices.length != 0) {
              $.ajax({
-                url: example_camera_addr+"/control/get",
+                url: example_camera_addr_14+"/control/get",
                 data: {"externalStorage":""},
                 method: "GET",
                 async: false,
@@ -767,7 +784,7 @@ $(function() {
             })
             .done(function(data){
                 // NFS External Storage
-                if ("nfs" in data.externalStorage) {
+                if ("nfs" in data.externalStorage && (saveDevices.indexOf("nfs") > -1)) {
                     var nfsStorage = data.externalStorage.nfs.device.split(":/");
                     if (document.getElementById("nfsAddress") != document.activeElement) {
                         document.getElementById("nfsAddress").value = nfsStorage[0];
@@ -784,7 +801,7 @@ $(function() {
                 }
                 
                 // SMB External Storage
-                if ("smb" in data.externalStorage) {
+                if ("smb" in data.externalStorage && (saveDevices.indexOf("smb") > -1)) {
                     var smbStorage = data.externalStorage.smb.device.split("/");
                     if (document.getElementById("smbAddress") != document.activeElement) {
                         document.getElementById("smbAddress").value = smbStorage[2];
@@ -803,6 +820,7 @@ $(function() {
                 // Add External Storage Devices into Location Drop Down Container
                 StorageInfo = data.externalStorage;
                 StorageInfo.size = -1;
+                console.log(StorageInfo);
 
                 for (key in StorageInfo)
                 {
