@@ -192,6 +192,8 @@ $(function() {
         document.getElementById("ipList").innerHTML = "";
         // Clear all IP
         ipArray = ipDisplay = camInfo = camVersion = camSerial = [];
+        // Store new clear textarea & list
+        saveToStorage();
     }
 
     /* Screenshot Display */
