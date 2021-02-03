@@ -11,6 +11,21 @@
 
 <script type="text/javascript" src="js/jquery-3.5.1.min.js"></script>
 <script type="text/javascript" src="js/multi_control.js"></script>
+<script>
+    window.onload = function() {
+        if (window.sessionStorage) {
+            var list = window.sessionStorage.getItem("ipList");
+            var input = window.sessionStorage.getItem("ipAddressArea");
+            
+            if (list != "" || list != null) {
+                document.getElementById("ipList").innerHTML = list;
+            }
+            if (input != "" || input != null) {
+                document.getElementById("ipAddressArea").innerHTML = input;
+            }
+        }
+    }
+</script>
 
 <!--<link rel="styleSheet" href="css/Camera_GUI.css">-->
 <style>

@@ -69,6 +69,7 @@ $(function() {
 
             getCamInfo();
             displayCam();
+            saveToStorage();
         }
     }
 
@@ -730,7 +731,6 @@ $(function() {
 
     externalStorage = function() {
         findexternalStorage();
-        console.log(camStorage);
 
         var sdaNumber = 0;
         var sdNumber = 0;
@@ -769,8 +769,6 @@ $(function() {
         if (sdNumber == camStorage.length) {
             saveDevices.push("mmcblk1p1");
         }
-
-        console.log(saveDevices);
 
         // Only allow to use SMB & NFS to save
         if (saveDevices.length != 0) {
@@ -820,7 +818,6 @@ $(function() {
                 // Add External Storage Devices into Location Drop Down Container
                 StorageInfo = data.externalStorage;
                 StorageInfo.size = -1;
-                console.log(StorageInfo);
 
                 for (key in StorageInfo)
                 {
@@ -1100,7 +1097,16 @@ $(function() {
         return "";
     }
 
+    saveToStorage = function() {
+        if (window.sessionStorage) {
+            var list = document.getElementById("ipList").innerHTML;
+            var input = document.getElementById("ipAddressArea").value;
+
+            window.sessionStorage.setItem("ipList", list);
+            window.sessionStorage.setItem("ipAddressArea", input);
+        }
+    }
+
     // Update Video Screenshot
-    var intervalID = setInterval(updateScreen, 500);
-        
+    setInterval(updateScreen, 500);
 });
