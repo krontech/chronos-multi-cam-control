@@ -18,7 +18,7 @@ IP addresses in the text area and display list will stay after page refresh, but
 
 To clear all IP addresses, use *Clear* button.
 
-![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/camera_ip_addresses.png)
+![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/cmarea_ip_addresses.png)
 
 ## Set Parameters
 
