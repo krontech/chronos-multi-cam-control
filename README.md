@@ -18,6 +18,8 @@ IP addresses in the text area and display list will stay after page refresh, but
 
 To clear all IP addresses, use *Clear* button.
 
+![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/camera_ip_addresses.png)
+
 ## Set Parameters
 
 Setting exposure in time/percentage/shutter angle/slider, resolution and frame rate is the same as controlling single Chronos camera via webpage. If users control Chronos 1.4 and 2.1 at the same time, some resolutions will NOT be valid (i.e. 1920x1080), and exposure and frame rate limits will follow the minimum value between 1.4 and 2.1.
