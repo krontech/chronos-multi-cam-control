@@ -146,22 +146,17 @@ $(function() {
                                   '<button type="button" id= "button'+ i +'" onclick="deleteIp(this)">delete</button></li>';
             }
         }
+        // IP address for parameters display
+        example_camera_addr = ipArray[0];
 
         exampleVersion = checkVersion();
-
         if (exampleVersion == "Mix") {
             var index14 = camVersion.indexOf("1.4");
             var index21 = camVersion.indexOf("2.1");
             example_camera_addr_14 = ipArray[index14];
             example_camera_addr_21 = ipArray[index21];
         }
-        else {
-            example_camera_addr = ipArray[0];
-        }
         
-
-        
-
         // Get & display parameters from the first camera on the list
         getResolution();
         getExposure();
@@ -282,15 +277,12 @@ $(function() {
     /* Get Parameters from First Camera in IP List */
     // Resolution Box
     getResolution = function() {
-        var camera_addr = ";"
         if (exampleVersion == "Mix") {
-            camera_addr = example_camera_addr_14;
+            example_camera_addr = example_camera_addr_14;
         }
-        else {
-            camera_addr = example_camera_addr;
-        }
+
         $.ajax({
-            url: camera_addr+"/control/get",
+            url: example_camera_addr+"/control/get",
             data: {"resolution":"",},
             method: "GET",
             async: false,
@@ -307,15 +299,12 @@ $(function() {
     }
     // Exposure Box
     getExposure = function() {
-        var camera_addr;
         if (exampleVersion == "Mix") {
-            camera_addr = example_camera_addr_21;
+            example_camera_addr = example_camera_addr_21;
         }
-        else {
-            camera_addr = example_camera_addr;
-        }
+
         $.ajax({
-            url: camera_addr+"/control/get",
+            url: example_camera_addr+"/control/get",
             data: {"exposurePeriod":"",
                    "exposurePercent":"",
                    "shutterAngle":"",
@@ -489,10 +478,15 @@ $(function() {
         document.getElementById("hRes").value = pieces[0]; // set the preset horizontal resolution
         document.getElementById("vRes").value = pieces[2]; // set the preset vertical resolution
         document.getElementById("fps").value = pieces[4]; // set the preset framerate
+        document.getElementById("fps").max = pieces[4];
     }
 
     // Set Frame Rate to its max value
     getMaxFrameRate = function() {
+        if (exampleVersion == "Mix") {
+            example_camera_addr = example_camera_addr_14;
+        }
+
         $.ajax({
             url: example_camera_addr+"/control/get",
             data: {"minFramePeriod":""},
@@ -511,6 +505,7 @@ $(function() {
                 document.getElementById("applyButton").classList.remove("disabled");
             }
 
+            /*
             $.ajax({
                 url: example_camera_addr+"/control/getResolutionTimingLimits",
                 data: {"hRes": document.getElementById("hRes").value,
@@ -519,6 +514,7 @@ $(function() {
                 contentType: "application/json",
                 timeout: 10000
             });	
+            */
         });
     }
     
@@ -623,31 +619,32 @@ $(function() {
             document.getElementById("popUpBackground").classList.remove("hidden") ;
             document.getElementById("netShareResultBox").classList.remove("hidden") ;
         }
-        
-        var requestSender = new XMLHttpRequest();
-        requestSender.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                if (requestSender.responseText == "") {
-                    document.getElementById("netShareResultBox").firstChild.textContent = "Camera could not connect";
-                }
-                else {
-                    var jsonBack = JSON.parse(requestSender.responseText);
-                    if ("error" in jsonBack) {
-                        document.getElementById("netShareResultBox").firstChild.textContent = jsonBack.error;
-                    }
-                    else {
-                        document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
-                    }
-                }
 
-                document.getElementById("popUpBackground").classList.remove("hidden");
-                document.getElementById("netShareResultBox").classList.remove("hidden");
+        //$(document).ready(function(){
+            for (i = 0; i < ipArray.length; i++) {
+                $.ajax({
+                    type: "GET",
+                    url: ipArray[i] + "/cgi-bin/netShare?" + parameters,
+                    dataType: 'jsonp',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    success: function(dataWeGotViaJsonp){
+                        console.log("Yes");
+                        console.log(dataWeGotViaJsonp);
+                    },
+                    error: function (data) {
+                        console.log(data);
+                        if (data.readyState == 4 && data.status == 200) {
+                            document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
+                            document.getElementById("popUpBackground").classList.remove("hidden");
+                            document.getElementById("netShareResultBox").classList.remove("hidden");
+                            externalStorage();
+                        }
+                    } 
+                }); 
             }
-        }
-
-        requestSender.open("GET", "/cgi-bin/netShare?" + parameters);
-        requestSender.setRequestHeader("Content-Type", "application/json");
-        requestSender.send();
+        //});   
     }
 
     // Unmount, Test & Apply Button
@@ -773,9 +770,9 @@ $(function() {
         }
 
         // Only allow to use SMB & NFS to save
-        if (saveDevices.length != 0) {
+        //if (saveDevices.length != 0) {
              $.ajax({
-                url: example_camera_addr_14+"/control/get",
+                url: example_camera_addr+"/control/get",
                 data: {"externalStorage":""},
                 method: "GET",
                 async: false,
@@ -870,7 +867,7 @@ $(function() {
                 }
                 list.innerHTML += '<a onclick="dropDownSelect(this)">Refresh</a>';
             })
-        }
+        //}
     }
         
     // Save Button
