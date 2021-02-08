@@ -4,6 +4,8 @@
 
 By inputting IP addresses, users can start/stop video recording, set resolution, frame rate and exposure, establish network storage (SMB/NFS) and save videos in different save locations or formats.
 
+![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
+
 ## IP Addresses Input
 
 Input cameras' IP adresses in the text area in *Camera IP Address* section, separated by comma or dash. 
