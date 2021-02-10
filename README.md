@@ -29,3 +29,7 @@ Setting exposure in time/percentage/shutter angle/slider, resolution and frame r
 Only external storage devices that all cameras have will be showed in the *Location* dropdown.
 
 Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose to save with automatic name. If users input a customer-defined name, videos will save as *filename_SerialNumber*.
+
+## Screenshot and Parameter Display
+
+After clicking *Confirm* button, preview and parameters will show if there is at least one valid camera. The preview and parameters are from the first camera in the list. As mentioned above, resolution, exposure and frame rate are limited if connected camreas are mixed (have both 1.4 and 2.1), so the preview and parameters will change under this condition. 

@@ -620,7 +620,7 @@ $(function() {
             document.getElementById("netShareResultBox").classList.remove("hidden") ;
         }
 
-        //$(document).ready(function(){
+        $(document).ready(function(){
             for (i = 0; i < ipArray.length; i++) {
                 $.ajax({
                     type: "GET",
@@ -629,22 +629,24 @@ $(function() {
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    success: function(dataWeGotViaJsonp){
-                        console.log("Yes");
-                        console.log(dataWeGotViaJsonp);
-                    },
-                    error: function (data) {
-                        console.log(data);
+                    load: (function(data) {
                         if (data.readyState == 4 && data.status == 200) {
                             document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
                             document.getElementById("popUpBackground").classList.remove("hidden");
                             document.getElementById("netShareResultBox").classList.remove("hidden");
-                            externalStorage();
                         }
-                    } 
-                }); 
+                    }),
+                    error: (function(error) {
+                        console.log(error);
+                        if (error.readyState == 4 && error.status == 200) {
+                            document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
+                            document.getElementById("popUpBackground").classList.remove("hidden");
+                            document.getElementById("netShareResultBox").classList.remove("hidden");
+                        }
+                    })
+                }) 
             }
-        //});   
+        });   
     }
 
     // Unmount, Test & Apply Button
@@ -865,7 +867,7 @@ $(function() {
 
                     document.getElementById("saveVideoButton").classList.add("disabled");
                 }
-                list.innerHTML += '<a onclick="dropDownSelect(this)">Refresh</a>';
+                list.innerHTML += '<a onclick="externalStorage()">Refresh</a>';
             })
         //}
     }
@@ -888,7 +890,7 @@ $(function() {
         })
         .done(function(data) {
             lastKnownFrameEnd = data.totalFrames;
-            
+            /*
             switch(data.videoState) {
                 case "live":
                     document.getElementById("saveProgress").classList.add("hidden");
@@ -913,6 +915,7 @@ $(function() {
                     setCookie("sr", 0); // saved the video (don't need to warn next time I record)
                     break ;
             }
+            */
             
             // Handle Location, Filename & Format
             var fileName = document.getElementById("fileName").value;
@@ -938,6 +941,7 @@ $(function() {
                         break ;
                 
                 }
+                var tmp = request;
 
                 // Get system time to generate filename automatically
                 var currentTime = new Date();
@@ -947,6 +951,7 @@ $(function() {
                 var second = currentTime.getSeconds(); if (second < 10) { second = "0" + second; }
 
                 for (i = 0; i < ipArray.length; i++) {
+                    request = tmp;
                     if (fileName != "") {
                         request += ', "filename": "' + fileName + '_' + camSerial[i] + '"';
                     }
