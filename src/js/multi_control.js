@@ -668,6 +668,7 @@ $(function() {
             for (i = 0; i < ipArray.length; i++) {
                 if ("error" in response[i]) {
                     document.getElementById("netShareResultBox").firstChild.textContent = "Camera" + "(" + ipArray[i] + ")\n" + response[i].error;
+                    
                     break;
                 }
                 else if (response[i] == "") {
@@ -861,6 +862,7 @@ $(function() {
             }
 
             var list = document.getElementById("storageLocationInner");
+            console.log(StorageInfo.size);
 
             if (StorageInfo.size > 0)
             {

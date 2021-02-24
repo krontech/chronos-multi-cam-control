@@ -8,7 +8,7 @@ By inputting IP addresses, users can start/stop video recording, set resolution,
 
 ## Server-Side Update
 
-There is one place that needs to be updated in the server-side (camera-side) to allow cross-origin resource sharing (CORS). In the */cgi-bin/netShare*, *Access-COntrol-Allow-Origin* is added and allows accesses from all domains:
+There is one place that needs to be updated in the server-side (camera-side) to allow cross-origin resource sharing (CORS). In the */cgi-bin/netShare*, *Access-Control-Allow-Origin* is added and allows accesses from all domains:
 
 ![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/netShare_update.png)
 
