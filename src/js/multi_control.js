@@ -621,32 +621,68 @@ $(function() {
         }
 
         $(document).ready(function(){
+            test();
+        });
+        
+        function test() {
+            var response = [];
             for (i = 0; i < ipArray.length; i++) {
                 $.ajax({
-                    type: "GET",
                     url: ipArray[i] + "/cgi-bin/netShare?" + parameters,
-                    dataType: 'jsonp',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    load: (function(data) {
-                        if (data.readyState == 4 && data.status == 200) {
-                            document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
+                    type: "GET",
+                    dataType: "json",
+                    crossDomain: true,
+                    async: false,
+                    success: (function(data, textStatus, scr) {
+                        if (scr.readyState == 4 && scr.status == 200) {
+                            console.log(data);
+                            // store the response for pop-up window
+                            response[i] = data;
+                            /*
+                            if (data == "") {
+                                document.getElementById("netShareResultBox").firstChild.textContent = "Camera could not connect";
+                            }
+                            else {
+                                if ("error" in data) {
+                                    document.getElementById("netShareResultBox").firstChild.textContent = data.error;
+                                }
+                                else {
+                                    document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
+                                }
+                            }
                             document.getElementById("popUpBackground").classList.remove("hidden");
                             document.getElementById("netShareResultBox").classList.remove("hidden");
+                            */
                         }
                     }),
-                    error: (function(error) {
-                        console.log(error);
-                        if (error.readyState == 4 && error.status == 200) {
-                            document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
-                            document.getElementById("popUpBackground").classList.remove("hidden");
-                            document.getElementById("netShareResultBox").classList.remove("hidden");
-                        }
+                    error: (function(scr, textStatus, errorMessage) {
+                        console.log(scr, textStatus, errorMessage);
+                        document.getElementById("netShareResultBox").firstChild.textContent = "Something wrong happens. Please check network share settings.";
                     })
-                }) 
+                })
+                .done(function() {
+                    return response;
+                })
             }
-        });   
+            //console.log(response);
+            for (i = 0; i < ipArray.length; i++) {
+                if ("error" in response[i]) {
+                    document.getElementById("netShareResultBox").firstChild.textContent = "Camera" + "(" + ipArray[i] + ")\n" + response[i].error;
+                    break;
+                }
+                else if (response[i] == "") {
+                    document.getElementById("netShareResultBox").firstChild.textContent = "Camera" + "(" + ipArray[i] + ")\n" + "Camera could not connect";
+                    break;
+                }
+                else {
+                    document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
+                }
+            }
+            
+            document.getElementById("popUpBackground").classList.remove("hidden");
+            document.getElementById("netShareResultBox").classList.remove("hidden");
+            externalStorage();
+        }
     }
 
     // Unmount, Test & Apply Button
@@ -772,112 +808,108 @@ $(function() {
         }
 
         // Only allow to use SMB & NFS to save
-        //if (saveDevices.length != 0) {
-             $.ajax({
-                url: example_camera_addr+"/control/get",
-                data: {"externalStorage":""},
-                method: "GET",
-                async: false,
-                contentType: "application/json",
-                timeout: 10000
-            })
-            .done(function(data){
-                // NFS External Storage
-                if ("nfs" in data.externalStorage && (saveDevices.indexOf("nfs") > -1)) {
-                    var nfsStorage = data.externalStorage.nfs.device.split(":/");
-                    if (document.getElementById("nfsAddress") != document.activeElement) {
-                        document.getElementById("nfsAddress").value = nfsStorage[0];
-                    }
-                    if (document.getElementById("nfsMount") != document.activeElement) {
-                        document.getElementById("nfsMount").value = nfsStorage[1];
-                    }
-                    document.getElementById("nfsUnmountBtn").classList.remove("disabled");
-                    document.getElementById("nfsTestBtn").classList.remove("disabled");
+        $.ajax({
+            url: example_camera_addr+"/control/get",
+            data: {"externalStorage":""},
+            method: "GET",
+            async: false,
+            contentType: "application/json",
+            timeout: 10000
+        })
+        .done(function(data){
+            // NFS External Storage
+            if ("nfs" in data.externalStorage && (saveDevices.indexOf("nfs") > -1)) {
+                var nfsStorage = data.externalStorage.nfs.device.split(":/");
+                if (document.getElementById("nfsAddress") != document.activeElement) {
+                    document.getElementById("nfsAddress").value = nfsStorage[0];
                 }
-                else {
-                    document.getElementById("nfsUnmountBtn").classList.add("disabled");
-                    document.getElementById("nfsTestBtn").classList.add("disabled");
+                if (document.getElementById("nfsMount") != document.activeElement) {
+                    document.getElementById("nfsMount").value = nfsStorage[1];
                 }
-                
-                // SMB External Storage
-                if ("smb" in data.externalStorage && (saveDevices.indexOf("smb") > -1)) {
-                    var smbStorage = data.externalStorage.smb.device.split("/");
-                    if (document.getElementById("smbAddress") != document.activeElement) {
-                        document.getElementById("smbAddress").value = smbStorage[2];
-                    }
-                    if (document.getElementById("smbMount") != document.activeElement) {
-                        document.getElementById("smbMount").value = smbStorage[3];
-                    }
-                    document.getElementById("smbUnmountBtn").classList.remove("disabled");
-                    document.getElementById("smbTestBtn").classList.remove("disabled");
+                document.getElementById("nfsUnmountBtn").classList.remove("disabled");
+                document.getElementById("nfsTestBtn").classList.remove("disabled");
+            }
+            else {
+                document.getElementById("nfsUnmountBtn").classList.add("disabled");
+                document.getElementById("nfsTestBtn").classList.add("disabled");
+            }
+            
+            // SMB External Storage
+            if ("smb" in data.externalStorage && (saveDevices.indexOf("smb") > -1)) {
+                var smbStorage = data.externalStorage.smb.device.split("/");
+                if (document.getElementById("smbAddress") != document.activeElement) {
+                    document.getElementById("smbAddress").value = smbStorage[2];
                 }
-                else {
-                    document.getElementById("smbUnmountBtn").classList.add("disabled");
-                    document.getElementById("smbTestBtn").classList.add("disabled");
+                if (document.getElementById("smbMount") != document.activeElement) {
+                    document.getElementById("smbMount").value = smbStorage[3];
                 }
+                document.getElementById("smbUnmountBtn").classList.remove("disabled");
+                document.getElementById("smbTestBtn").classList.remove("disabled");
+            }
+            else {
+                document.getElementById("smbUnmountBtn").classList.add("disabled");
+                document.getElementById("smbTestBtn").classList.add("disabled");
+            }
 
-                // Add External Storage Devices into Location Drop Down Container
-                StorageInfo = data.externalStorage;
-                StorageInfo.size = -1;
+            // Add External Storage Devices into Location Drop Down Container
+            StorageInfo = data.externalStorage;
+            StorageInfo.size = -1;
 
+            for (key in StorageInfo)
+            {
+                StorageInfo.size++;
+            }
+
+            var list = document.getElementById("storageLocationInner");
+
+            if (StorageInfo.size > 0)
+            {
+                list.innerHTML = "";
                 for (key in StorageInfo)
                 {
-                    StorageInfo.size++;
-                }
-
-                var list = document.getElementById("storageLocationInner");
-
-                if (StorageInfo.size > 0)
-                {
-                    list.innerHTML = "";
-                    for (key in StorageInfo)
+                    if (key != "size" && saveDevices.indexOf(key) > -1)
                     {
-                        if (key != "size" && saveDevices.indexOf(key) > -1)
-                        {
-                            var temp = '<a onclick=\'useStorageLocation("' + key + '")\'>';
-                            if (key in StorageNames)
-                                temp += StorageNames[key];
-                                
-                            temp += '&ensp;(' + key + ')</a>';
+                        var temp = '<a onclick=\'useStorageLocation("' + key + '")\'>';
+                        if (key in StorageNames)
+                            temp += StorageNames[key];
+                            
+                        temp += '&ensp;(' + key + ')</a>';
 
-                            list.innerHTML += temp;
-                        }
-                    }
-
-                    var saveStorageVal = parseInt(getCookie("as"));
-
-                    if ( (saveStorageVal != 0) && isNaN(saveStorageVal) )
-                    {
-                        if (saveStorageVal < 0)
-                        {
-                            saveStorageVal *= -1;
-                        }
-                        key = Object.keys(StorageNames)[saveStorageVal - 1];
-
-                        if (key in StorageInfo)
-                        {
-                            useStorageLocation(key);
-                        }
+                        list.innerHTML += temp;
                     }
                 }
-                else
-                {
-                    document.getElementById(StorageLocation).firstChild.textContent = "Location";
-                    list.innerHTML = '<a>No Storage Connected</a>';
 
-                    document.getElementById("saveVideoButton").classList.add("disabled");
+                var saveStorageVal = parseInt(getCookie("as"));
+
+                if ( (saveStorageVal != 0) && isNaN(saveStorageVal) )
+                {
+                    if (saveStorageVal < 0)
+                    {
+                        saveStorageVal *= -1;
+                    }
+                    key = Object.keys(StorageNames)[saveStorageVal - 1];
+
+                    if (key in StorageInfo)
+                    {
+                        useStorageLocation(key);
+                    }
                 }
-                list.innerHTML += '<a onclick="externalStorage()">Refresh</a>';
-            })
-        //}
+            }
+            else
+            {
+                document.getElementById(StorageLocation).firstChild.textContent = "Location";
+                list.innerHTML = '<a>No Storage Connected</a>';
+
+                document.getElementById("saveVideoButton").classList.add("disabled");
+            }
+            list.innerHTML += '<a onclick="externalStorage()">Refresh</a>';
+        })
     }
         
     // Save Button
     var lastKnownVideoState = "live";
     var lastKnownFrameEnd = 1;
     var lastKnownCurrentFrame = 0;
-    var lastKnownRecordMode = "";
-    var lastKnownState = "idle";
 
     saveWholeVideo = function() { 
         $.ajax({

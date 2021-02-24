@@ -13,6 +13,7 @@ IFS=$backupIFS
 
 echo "Content-type: application/json"
 echo "Cache-Control: no-cache"
+echo "Access-Control-Allow-Origin: *"
 echo ""
 
 

@@ -6,6 +6,12 @@ By inputting IP addresses, users can start/stop video recording, set resolution,
 
 ![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
 
+## Server-Side Update
+
+There is one place that needs to be updated in the server-side (camera-side) to allow cross-origin resource sharing (CORS). In the */cgi-bin/netShare*, *Access-COntrol-Allow-Origin* is added and allows accesses from all domains:
+
+(This update can be made directly in the camera */usr/share/chronos-http/cgi-bin/netShare* for temporary tests.)
+
 ## IP Addresses Input
 
 Input cameras' IP adresses in the text area in *Camera IP Address* section, separated by comma or dash. 
