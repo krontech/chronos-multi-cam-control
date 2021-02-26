@@ -1,4 +1,12 @@
 # chronos-multi-cam-control
+Brief description of the repository
+
+## Network Setup Guide
+Attach a link to the Network setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
+
+Attach a link to SMB Setup Guide for reference https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf
+
+Make a note that connecting multiple cameras to Network has to be through Ethernet. Only 1 camera can be connected through USB with a fixed IP 192.168.12.1 IP Address.
 
 ## Multi-Camera Control via Webpage
 
@@ -40,4 +48,7 @@ Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose t
 
 ## Screenshot and Parameter Display
 
-After clicking *Confirm* button, preview and parameters will show if there is at least one valid camera. The preview and parameters are from the first camera in the list. As mentioned above, resolution, exposure and frame rate are limited if connected camreas are mixed (have both 1.4 and 2.1), so the preview and parameters will change under this condition. 
+After clicking *Confirm* button, preview and parameters will show if there is at least one valid camera. The preview and parameters are from the first camera in the list. As mentioned above, resolution, exposure and frame rate are limited if connected camreas are mixed (have both 1.4 and 2.1), so the preview and parameters will change under this condition.
+
+## Notes
+Due to network delays, frames length will not be accurate.
