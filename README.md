@@ -1,28 +1,19 @@
 # Chronos-Multi-Cam-Control Webpage
-The multiple camera control web interface gives Chronos users the freedom to control multiple cameras over ethernet network at the same time. Users can start/stop video recording, set resolution, frame rate, exposure, establish network storage (SMB/NFS) and save videos to different locations or formats (H.264, CinemaDNG, TIFF, TIFF RAW). You can simply clone or download this Github repository and access the web interface through opening the main.html file in the directory on your favorite web browser. 
+The multiple camera control web interface gives Chronos users the freedom to control multiple cameras over ethernet network at the same time. Users can start/stop video recording, set resolution, frame rate, exposure, establish network storage (SMB/NFS) and save videos to different locations or formats (H.264, CinemaDNG, TIFF, and TIFF RAW). To install this interface, users can clone or download this Github repository and access the web interface through opening the main.html file in the directory on their web browser. 
 
 ![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
 
-## Network Setup Guide
-For information on "How to setup Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
-<b> Note: Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". </b> Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, you would require connection to Ethernet. Please consult with your IT Department, if you experience network connectivity issue as most organizations have firewalls set in place.
+## Network Setup Guides
+For information on "How to setup a Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
+<b> Note: Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". </b> Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, users would require to connect through ethernet network. Please consult with your IT Department, if you experience network connectivity issue as most organizations have firewalls set in place.
 
-For more information on "How to Setup Chronos camera with SMB Network", refer to this guide. https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf 
-
-
-## Server-Side Update
-
-There is one place that needs to be updated in the server-side (camera-side) to allow cross-origin resource sharing (CORS). In the */cgi-bin/netShare*, *Access-Control-Allow-Origin* is added and allows accesses from all domains:
-
-![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/netShare_update.png)
-
-(This update can be made directly in the camera */usr/share/chronos-http/cgi-bin/netShare* for temporary tests.)
+For more information on "How to Setup Chronos camera with SMB Network", refer to the SMB Share Setup Guide. https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf 
 
 ## IP Addresses Input
 
-Input cameras' IP adresses in the text area in *Camera IP Address* section, separated by comma or dash. 
+Input all Chronos cameras IP adresses in the text box under *Camera IP Address* section, separated by comma or dash. 
 
-Clicking *Confirm* button will check IP addresses' validity and cameras' connection. Invalid and disconnected IP addresses will be removed to continue. A pop-up window will appear to warn users which IP addresses need to be removed and their reason. 
+Press *Confirm* button to verify the IP addresses and establish connection. Invalid and disconnected IP addresses will be removed to continue. A pop-up window will appear to warn users which IP addresses need to be removed if . 
 
 All valid and connected cameras will be listed below the text area in *IP Address - Chronos Version, Color Pattern, Memory Size, Serial Number* format. A *delete* button will show behind each IP address for users to delete this IP address. 
 
