@@ -5,7 +5,7 @@ The multiple camera control web interface gives Chronos users the freedom to con
 
 ## Network Setup Guide
 For information on "How to setup Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
-Please note Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, you would require connection to Ethernet. Please consult with your IT Department, if you experience network connectivity issue as most organizations have firewalls set in place.
+<b> Note: Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". </b> Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, you would require connection to Ethernet. Please consult with your IT Department, if you experience network connectivity issue as most organizations have firewalls set in place.
 
 For more information on "How to Setup Chronos camera with SMB Network", refer to this guide. https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf 
 
@@ -36,20 +36,23 @@ To clear all IP addresses, use *Clear* button.
 
 Setting exposure in time/percentage/shutter angle/slider, resolution and frame rate is the similar to controlling single Chronos cameras via webpage. If users control Chronos 1.4 and 2.1 at the same time, some resolutions will NOT be valid (i.e. 1920x1080), exposure and frame rate will also be limited to record settings that are achievable with both 1.4 and 2.1. For more information on resolutions and record setting refer to the Datasheets.
 
-Chronos 1.4: https://www.krontech.ca/chronos-1-4-resources/
+Chronos 1.4: https://www.krontech.ca/wp-content/uploads/2019/03/FM-ENGR-50001-Chronos-1.4-Datasheet-Rv4-1.pdf
 
-Chronos 2.1: https://www.krontech.ca/chronos-2-1-resources/
+Chronos 2.1: https://www.krontech.ca/wp-content/uploads/2020/02/FM-ENGR-50002-Chronos-2.1-HD-Datasheet-Rev4.pdf
 
 ## Save Video
 
 All Chronos cameras connected via webpage must have the same type of external storage device to save efficiently such as SD, SSD, or USB.
 
-Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose to save with automatic name. If users input a customer-defined name, videos will save as *filename_SerialNumber*. The recorded footage can be differentiated by their Serial Numbers. <b> Note: Saving to SMB or NFS network storage is recommended to verify all videos from Chronos cameras are saved in the directories after every recording. </b>
+Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose to save with automatic name. If users input a customer-defined name, videos will save as *filename_SerialNumber*. The recorded footage can be differentiated by their Serial Numbers. <b> Note: Saving to SMB or NFS network storage is recommended for better success saving multiple videos and verifying all videos from Chronos cameras are saved to the directory before proceeding. </b>
 
 
 ## Screenshot and Parameter Display
 
-After clicking *Confirm* button, preview and parameters will show if there is at least one valid camera. The preview and parameters are from the first camera in the list. As mentioned above, resolution, exposure and frame rate are limited if connected camreas are mixed (have both 1.4 and 2.1), so the preview and parameters will change under this condition.
+After clicking *Confirm* button, video preview and settings will appear on the webpage if there is at least one valid IP address. The video preview and settings will default to first camera in the list. By clicking on the selected Chronos IP address hyperlink, users can switch to the camera sceen and settings they wish to view. As mentioned above, resolution, exposure and frame rate will be limited if webpage has both Chronos 1.4 and 2.1 models connected. 
 
 ## Notes
-Due to network delays, frames length will not be accurate.
+- Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1".
+- Due to network delays, recorded frame length from each camera will slightly differ.
+- Controlling both Chronos 1.4 and 2.1 to the webpage, will limit the record setting to compliment both models. For more info, review the datasheets.
+- Saving to SMB or NFS network storage is recommended for better success saving multiple videos and verifying all videos from Chronos cameras are saved to the directory before proceeding.
