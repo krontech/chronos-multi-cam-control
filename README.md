@@ -1,5 +1,7 @@
-# chronos-multi-cam-control
+# Chronos-Multi-Cam-Control Webpage
 The multiple camera control web interface gives Chronos users the freedom to control multiple cameras over ethernet network at the same time. Users can start/stop video recording, set resolution, frame rate, exposure, establish network storage (SMB/NFS) and save videos to different locations or formats (H.264, CinemaDNG, TIFF, TIFF RAW). You can simply clone or download this Github repository and access the web interface through opening the main.html file in the directory on your favorite web browser. 
+
+![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
 
 ## Network Setup Guide
 For information on "How to setup Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
@@ -7,10 +9,6 @@ Please note Chronos cameras connected through USB will have a fixed IP address o
 
 For more information on "How to Setup Chronos camera with SMB Network", refer to this guide. https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf 
 
-## Multi-Camera Control via Webpage
-
-The screenshot below shows the main web page for controlling multiple Chronos cameras.
-![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
 
 ## Server-Side Update
 
@@ -24,7 +22,7 @@ There is one place that needs to be updated in the server-side (camera-side) to 
 
 Input cameras' IP adresses in the text area in *Camera IP Address* section, separated by comma or dash. 
 
-Clicking *Confirm* button will check IP addresses' validity and cameras' connection. Invalid and disconnected IP addresses will be removed to continue. A pop-up window will show up to warn users that which IP address is removed by what reason. 
+Clicking *Confirm* button will check IP addresses' validity and cameras' connection. Invalid and disconnected IP addresses will be removed to continue. A pop-up window will appear to warn users which IP addresses need to be removed and their reason. 
 
 All valid and connected cameras will be listed below the text area in *IP Address - Chronos Version, Color Pattern, Memory Size, Serial Number* format. A *delete* button will show behind each IP address for users to delete this IP address. 
 
@@ -36,13 +34,18 @@ To clear all IP addresses, use *Clear* button.
 
 ## Set Parameters
 
-Setting exposure in time/percentage/shutter angle/slider, resolution and frame rate is the same as controlling single Chronos camera via webpage. If users control Chronos 1.4 and 2.1 at the same time, some resolutions will NOT be valid (i.e. 1920x1080), and exposure and frame rate limits will follow the minimum value between 1.4 and 2.1.
+Setting exposure in time/percentage/shutter angle/slider, resolution and frame rate is the similar to controlling single Chronos cameras via webpage. If users control Chronos 1.4 and 2.1 at the same time, some resolutions will NOT be valid (i.e. 1920x1080), exposure and frame rate will also be limited to record settings that are achievable with both 1.4 and 2.1. For more information on resolutions and record setting refer to the Datasheets.
+
+Chronos 1.4: https://www.krontech.ca/chronos-1-4-resources/
+
+Chronos 2.1: https://www.krontech.ca/chronos-2-1-resources/
 
 ## Save Video
 
-Only external storage devices that all cameras have will be showed in the *Location* dropdown.
+All Chronos cameras connected via webpage must have the same type of external storage device to save efficiently such as SD, SSD, or USB.
 
-Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose to save with automatic name. If users input a customer-defined name, videos will save as *filename_SerialNumber*.
+Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose to save with automatic name. If users input a customer-defined name, videos will save as *filename_SerialNumber*. The recorded footage can be differentiated by their Serial Numbers. <b> Note: Saving to SMB or NFS network storage is recommended to verify all videos from Chronos cameras are saved in the directories after every recording. </b>
+
 
 ## Screenshot and Parameter Display
 
