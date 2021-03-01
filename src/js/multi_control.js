@@ -1,43 +1,48 @@
 $(function() {
 
     /* Global Variables */
-    var i; // index for loop among all cameras
-    var ipArray = []; // array to store all ip addresses (with http://)
-    var ipDisplay = []; // array to store all ip addresses (without http://) & cameras' information to display
-    var camInfo = [];
-    var example_camera_addr = ""; // first address in the ip list for display
-    var example_camera_addr_14 = "";
-    var example_camera_addr_21 = "";
-    var exampleVersion = ";"
-    var camVersion = []; // array to store versions -> resolution, frame rate & exposure
-    var camSerial = []; // array to store serial numbers -> filenames
-    var resFRSettingsOnCam = []; // array to store orignal resolution
-    var camStorage = [];
-    var saveDevices = [];
+    var i;                           // index for loop among all cameras
+    var ipArray = [];                // array to store all ip addresses (with http://)
+    var ipDisplay = [];              // array to store all ip addresses (without http://) & cameras' information to display
+    var camInfo = [];                // array to store cameras' information
+    var example_camera_addr = "";    // first address in the ip list for display
+    var example_camera_addr_14 = ""; // first 1.4 camera's address in the ip list
+    var example_camera_addr_21 = ""; // first 2.1 camera's address in the ip list
+    var exampleVersion = ""          // camera version for the example (display) camera
+    var camVersion = [];             // array to store versions -> resolution, frame rate & exposure
+    var camSerial = [];              // array to store serial numbers -> filenames
+    var resFRSettingsOnCam = [];     // array to store orignal resolution
+    var camStorage = [];             // array to store external save devices for each camera
+    var saveDevices = [];            // array to store external save devices that all camera have
+    var invalidIp = [];              // array to store IPs that are invalid
+    var disconIp = [];               // array to atore IPs that are disconnected with cameras
 
     /* Get & Display Cameras' IP & Information */
     // Check IP Format
     checkIp = function() {
-        var ipSplit = [];
-        for (i = 0; i < ipArray.length; i++) {
+        const len = ipArray.length;
+        for (i = 0; i < len; i++) {
+            var ipSplit = [];
             ipArray[i] = ipArray[i].split(" ").join(""); // remove any space
             ipSplit = ipArray[i].split(".");
 
             if (ipSplit.length != 4) { // 123.45.67.89
-                
-                document.getElementById("popUpBackground").classList.remove("hidden");
-                document.getElementById("ipInvalidBox").firstChild.textContent = ipArray[i] + " is invalid. Remove to continue.";
-                document.getElementById("ipInvalidBox").classList.remove("hidden");
-                ipArray.splice(i, 1);
+                invalidIp.push(ipArray[i]);
             }
 
             for (var j = 0; j < ipSplit.length; j++) {
                 if ( isNaN(ipSplit[j]) ) { // contain only numbers
-                    document.getElementById("popUpBackground").classList.remove("hidden");
-                    document.getElementById("ipInvalidBox").firstChild.textContent = ipArray[i] + " is invalid. Remove to continue.";
-                    document.getElementById("ipInvalidBox").classList.remove("hidden");
+                    invalidIp.push(ipArray[i]);
+                    break;
                 }
             }  
+        }
+        // remove invalid IPs from ipArray
+        for (i = 0; i < invalidIp.length; i++) {
+            const index = ipArray.indexOf(invalidIp[i]);
+            if (index > -1) {
+                ipArray.splice(index, 1);
+            }   
         }
     }
 
@@ -45,6 +50,8 @@ $(function() {
     getIpAddress = function(){
         // Remove all former IP and information
         ipArray = [];
+        invalidIp = [];
+        disconIp = [];
         ipDisplay = [];
         camInfo = [];
 
@@ -88,37 +95,39 @@ $(function() {
                        "sensorColorPattern":"",},
                 async: false,
                 method: "GET",
-                timeout: 10000
-            })
-            .done(function(data) {
-                // Version
-                if (data.cameraModel.startsWith("CR14")) {
-                    camInfo[i] = " - Chronos 1.4, ";
-                    // Store Version for Further Use
-                    camVersion[i] = "1.4";
-                }
-                else {
-                    camInfo[i] = " - Chronos 2.1, ";
-                    camVersion[i] = "2.1";
-                }
-                // Color Pattern
-                if (data.sensorColorPattern == "GRBG") {
-                    camInfo[i] += "Color, ";
-                }
-                else {
-                    camInfo[i] += "Monochrome, ";
-                }
-                // Memory Size & Serial Number
-                camInfo[i] += data.cameraMemoryGB + "GB, Serial " + data.cameraSerial;
-                // Store Serial Number for Further Use
-                camSerial[i] = data.cameraSerial;
-            
+                timeout: 500,
+                success: function(data) {
+                    console.log(data);
+                    // Version
+                    if (data.cameraModel.startsWith("CR14")) {
+                        camInfo[i] = " - Chronos 1.4, ";
+                        // Store Version for Further Use
+                        camVersion[i] = "1.4";
+                    }
+                    else {
+                        camInfo[i] = " - Chronos 2.1, ";
+                        camVersion[i] = "2.1";
+                    }
+                    // Color Pattern
+                    if (data.sensorColorPattern == "GRBG") {
+                        camInfo[i] += "Color, ";
+                    }
+                    else {
+                        camInfo[i] += "Monochrome, ";
+                    }
+                    // Memory Size & Serial Number
+                    camInfo[i] += data.cameraMemoryGB + "GB, Serial " + data.cameraSerial;
+                    // Store Serial Number for Further Use
+                    camSerial[i] = data.cameraSerial;
 
-                
+                },
+                error: function(data) {
+                    disconIp.push(ipDisplay[i]);
+                }
             });
         }
         // Return to Global Variables
-        return camInfo, camVersion, camSerial;
+        return disconIp, camInfo, camVersion, camSerial;
     }
 
     // Display IP, Camera Information & Parameters (from the first valid camera in the ip list)
@@ -126,26 +135,37 @@ $(function() {
         var list = document.getElementById("ipList");
         list.innerHTML = "";
 
-        for (i = 0; i < ipDisplay.length; i++) {
-            if (typeof(camInfo[i]) == "undefined") {
-                document.getElementById("popUpBackground").classList.remove("hidden");
-                document.getElementById("ipDisconnectedBox").firstChild.textContent = ipDisplay[i] + " is disconnected. Remove to continue.";
-                document.getElementById("ipDisconnectedBox").classList.remove("hidden");
-                ipArray.splice(i, 1);
-                ipDisplay.splice(i, 1);
-                camInfo.splice(i, 1);
-                camVersion.splice(i, 1);
-                camSerial.splice(i, 1);
-            }
+        // remove disconnected IPs from ipArray & ipDisplay
+        for (i = 0; i < disconIp.length; i++) {
+            const index = ipDisplay.indexOf(disconIp[i]);
+            if (index > -1) {
+                ipArray.splice(index, 1);
+                ipDisplay.splice(index, 1);
+                camInfo.splice(index, 1);
+                camVersion.splice(index, 1);
+                camSerial.splice(index, 1);
+            }   
         }
 
+        // Display IPs that are valid and connected successfully
         if (ipDisplay.length > 0) {
-            list.innerHTML += "The list of IP addresses:<br>";
+            list.innerHTML += "IP addresses connected successfully:<br>";
             for (i = 0; i < ipDisplay.length; i++) {
                 list.innerHTML += '<li id="ipAddress'+ i +'" style="list-style-type:none;">' + '<span>' + ipDisplay[i] + camInfo[i] + '</span>' + 
                                   '<button type="button" id= "button'+ i +'" onclick="deleteIp(this)">delete</button></li>';
             }
         }
+        // Display IPs that are invalid or disconnected
+        if (invalidIp.length > 0 || disconIp.length > 0) {
+            list.innerHTML += "IP addresses invalid or disconnected:<br>";
+            for (i = 0; i < invalidIp.length; i++) {
+                list.innerHTML += '<li id="ipAddress'+ i +'" style="list-style-type:none;">' + '<span>' + invalidIp[i] + ' - Invalid IP</span>';
+            }
+            for (i = 0; i < disconIp.length; i++) {
+                list.innerHTML += '<li id="ipAddress'+ i +'" style="list-style-type:none;">' + '<span>' + disconIp[i] + ' - Disconnected</span>';
+            }
+        }
+
         // IP address for parameters display
         example_camera_addr = ipArray[0];
 
@@ -635,28 +655,11 @@ $(function() {
                     async: false,
                     success: (function(data, textStatus, scr) {
                         if (scr.readyState == 4 && scr.status == 200) {
-                            console.log(data);
                             // store the response for pop-up window
                             response[i] = data;
-                            /*
-                            if (data == "") {
-                                document.getElementById("netShareResultBox").firstChild.textContent = "Camera could not connect";
-                            }
-                            else {
-                                if ("error" in data) {
-                                    document.getElementById("netShareResultBox").firstChild.textContent = data.error;
-                                }
-                                else {
-                                    document.getElementById("netShareResultBox").firstChild.textContent = "Success!";
-                                }
-                            }
-                            document.getElementById("popUpBackground").classList.remove("hidden");
-                            document.getElementById("netShareResultBox").classList.remove("hidden");
-                            */
                         }
                     }),
                     error: (function(scr, textStatus, errorMessage) {
-                        console.log(scr, textStatus, errorMessage);
                         document.getElementById("netShareResultBox").firstChild.textContent = "Something wrong happens. Please check network share settings.";
                     })
                 })
@@ -664,7 +667,7 @@ $(function() {
                     return response;
                 })
             }
-            //console.log(response);
+            
             for (i = 0; i < ipArray.length; i++) {
                 if ("error" in response[i]) {
                     document.getElementById("netShareResultBox").firstChild.textContent = "Camera" + "(" + ipArray[i] + ")\n" + response[i].error;
@@ -862,7 +865,6 @@ $(function() {
             }
 
             var list = document.getElementById("storageLocationInner");
-            console.log(StorageInfo.size);
 
             if (StorageInfo.size > 0)
             {
@@ -924,32 +926,6 @@ $(function() {
         })
         .done(function(data) {
             lastKnownFrameEnd = data.totalFrames;
-            /*
-            switch(data.videoState) {
-                case "live":
-                    document.getElementById("saveProgress").classList.add("hidden");
-                    document.getElementById("videoStateOverlay").innerHTML = "Live Display";
-                    break ;
-
-                case "play":
-                    document.getElementById("saveProgress").classList.remove("hidden")
-                    document.getElementById("videoStateOverlay").innerHTML = "Playing Video";
-                    document.getElementById("saveProgressFill").style.width = (lastKnownCurrentFrame / lastKnownFrameEnd * 100) + "%";
-                    document.getElementById("saveProgress").lastChild.textContent = "Playback Position";
-                    document.getElementById("record").classList.add("disabled"); // disable the record button
-                    break ;
-
-                case "filesave":
-                    if (lastKnownVideoState != "filesave")
-                        document.getElementById("saveProgressFill").style.width = 0;
-                    document.getElementById("saveProgress").classList.remove("hidden"); // show the progress bar
-                    document.getElementById("videoStateOverlay").innerHTML = "Saving Video";
-                    document.getElementById("record").classList.add("disabled"); // disable the record button
-
-                    setCookie("sr", 0); // saved the video (don't need to warn next time I record)
-                    break ;
-            }
-            */
             
             // Handle Location, Filename & Format
             var fileName = document.getElementById("fileName").value;
@@ -979,7 +955,9 @@ $(function() {
 
                 // Get system time to generate filename automatically
                 var currentTime = new Date();
-                var date = currentTime.toLocaleDateString();
+                var year = currentTime.getFullYear(); 
+                var month = currentTime.getMonth()+1; if (month < 10) { month = "0" + month; }
+                var day = currentTime.getDay(); if (day < 10) { day = "0" + day; }
                 var hour = currentTime.getHours(); if (hour < 10) { hour = "0" + hour; }
                 var minute = currentTime.getMinutes(); if (minute < 10) { minute = "0" + minute; }
                 var second = currentTime.getSeconds(); if (second < 10) { second = "0" + second; }
@@ -990,7 +968,7 @@ $(function() {
                         request += ', "filename": "' + fileName + '_' + camSerial[i] + '"';
                     }
                     else {
-                        request += ', "filename": "vid_' + date + '_' + hour + '-' + minute + '-' + second + '_' + camSerial[i] + '"';
+                        request += ', "filename": "vid_' + year + '-' + month + '-' + day + '_' + hour + '-' + minute + '-' + second + '_' + camSerial[i] + '"';
                     }
                     request += '}';
 
