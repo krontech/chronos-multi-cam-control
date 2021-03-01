@@ -3,14 +3,13 @@ The multiple camera control web interface gives Chronos users the freedom to con
 
 ## Network Setup Guide
 For information on "How to setup Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
-Please note Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, you would require connection to Ethernet. Please consult with your IT Department, if you experience issue connecting to the Network as most organizations have firewalls preventing network connectivity for security reasons. 
+Please note Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, you would require connection to Ethernet. Please consult with your IT Department, if you experience network connectivity issue as most organizations have firewalls set in place.
 
 For more information on "How to Setup Chronos camera with SMB Network", refer to this guide. https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf 
 
 ## Multi-Camera Control via Webpage
 
-By inputting IP addresses, users can start/stop video recording, set resolution, frame rate and exposure, establish network storage (SMB/NFS) and save videos in different save locations or formats.
-
+The screenshot below shows the main web page for controlling multiple Chronos cameras.
 ![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
 
 ## Server-Side Update
