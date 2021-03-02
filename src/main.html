@@ -19,6 +19,8 @@
             
             if (list != "" || list != null) {
                 document.getElementById("ipList").innerHTML = list;
+                //document.getElementById("popUpBackground").classList.remove("hidden");
+                //document.getElementById("afterReferashBox").classList.remove("hidden");
             }
             if (input != "" || input != null) {
                 document.getElementById("ipAddressArea").innerHTML = input;
@@ -68,6 +70,18 @@
 
     margin-left: 10px;
     padding: 5px 0 0 5px;
+}
+
+.delButton {
+    background-color: #0067B9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: fit-content;
+    height: 25px;
+}
+.delButton:hover {
+    background-color: #3D87CB;
 }
 
 .disabled {
@@ -270,16 +284,6 @@
                 <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
             </div>
 
-            <div id="ipInvalidBox" class="horizLayout hidden">
-                <br>
-                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
-            </div>
-
-            <div id="ipDisconnectedBox" class="horizLayout hidden">
-                <br>
-                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
-            </div>
-
             <div id="overwrittenBox" class="horizLayout hidden">
                 You have not saved any of the previous recording. Do you want to erase it and start a new recording?
                 <br>
@@ -323,6 +327,18 @@
 
             <div id="somethingWeirdBox" class="horizLayout hidden">
                 Something weird is happening
+            </div>
+
+            <div id="videoSavingBox" class="horizLayout hidden">
+                Wait for Saving to start...
+                <br>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
+            </div>
+
+            <div id="afterReferashBox" class="horizLayout hidden">
+                Please click "Confirm" button to re-connect all cameras.
+                <br>
+                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
             </div>
         </div>
     </div>

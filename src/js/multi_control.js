@@ -97,7 +97,6 @@ $(function() {
                 method: "GET",
                 timeout: 500,
                 success: function(data) {
-                    console.log(data);
                     // Version
                     if (data.cameraModel.startsWith("CR14")) {
                         camInfo[i] = " - Chronos 1.4, ";
@@ -152,7 +151,7 @@ $(function() {
             list.innerHTML += "IP addresses connected successfully:<br>";
             for (i = 0; i < ipDisplay.length; i++) {
                 list.innerHTML += '<li id="ipAddress'+ i +'" style="list-style-type:none;">' + '<span>' + ipDisplay[i] + camInfo[i] + '</span>' + 
-                                  '<button type="button" id= "button'+ i +'" onclick="deleteIp(this)">delete</button></li>';
+                                  '<button type="button" class="delButton" id= "button'+ i +'" onclick="deleteIp(this)">Delete</button></li>';
             }
         }
         // Display IPs that are invalid or disconnected
@@ -243,7 +242,7 @@ $(function() {
                     url: ipArray[i] + "/control/startRecording",
                     data: {},
                     method: "GET",
-                    timeout: 10000
+                    timeout: 500
                 });
             }
         }
@@ -288,7 +287,7 @@ $(function() {
                     url: ipArray[i] + "/control/stopRecording",
                     data: {},
                     method: "GET",
-                    timeout: 10000
+                    timeout: 500
                 });
             }
         }
@@ -306,7 +305,7 @@ $(function() {
             data: {"resolution":"",},
             method: "GET",
             async: false,
-            timeout: 10000
+            timeout: 500
         })
         .done(function(data){
             var value = parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2);
@@ -332,7 +331,7 @@ $(function() {
                    "exposureMax":"",
                    "framePeriod":"",},
             method: "GET",
-            timeout: 10000
+            timeout: 500
         })
         .done(function(data) {
             if (parseFloat(data.exposurePeriod / 1000).toFixed(1) > 900) {
@@ -380,7 +379,7 @@ $(function() {
                 data: parameters,
                 method: "POST",
                 contentType: "application/json",
-                timeout: 10000
+                timeout: 500
             });
         }
     }
@@ -397,7 +396,7 @@ $(function() {
                 data: parameters,
                 method: "POST",
                 contentType: "application/json",
-                timeout: 10000
+                timeout: 500
             });
         }
         getExposure();
@@ -414,7 +413,7 @@ $(function() {
                 data: parameters,
                 method: "POST",
                 contentType: "application/json",
-                timeout: 10000
+                timeout: 500
             });
         }
         getExposure();
@@ -511,7 +510,7 @@ $(function() {
             url: example_camera_addr+"/control/get",
             data: {"minFramePeriod":""},
             method: "GET",
-            timeout: 10000
+            timeout: 500
         })
         .done(function(data){
             var fpsBox = document.getElementById("fps");
@@ -569,7 +568,7 @@ $(function() {
                     data: parameters,
                     method: "POST",
                     contentType: "application/json",
-                    timeout: 10000
+                    timeout: 500
                 });
             }
 
@@ -755,7 +754,7 @@ $(function() {
                 method: "GET",
                 async: false,
                 contentType: "application/json",
-                timeout: 10000
+                timeout: 500
             })
             .done(function(data) {
                 var temp = [];
@@ -818,7 +817,7 @@ $(function() {
             method: "GET",
             async: false,
             contentType: "application/json",
-            timeout: 10000
+            timeout: 500
         })
         .done(function(data){
             // NFS External Storage
@@ -911,9 +910,44 @@ $(function() {
     }
         
     // Save Button
-    var lastKnownVideoState = "live";
+    //var lastKnownVideoState = "live";
+    var lastKnownVideoState = [];
     var lastKnownFrameEnd = 1;
-    var lastKnownCurrentFrame = 0;
+
+    // Get the number of frames that is processed for saving
+    getVideoState = function() {
+        for (i = 0; i < ipArray.length; i++) {
+            $.ajax({
+                url: ipArray[i]+"/control/get",
+                data: {"videoState": ""},
+                method: "GET",
+                async: false,
+                contentType: "application/json",
+                timeout: 500
+            })
+            .done(function(data) {
+                lastKnownVideoState[i] = data.videoState;
+            })
+        }
+        console.log(lastKnownVideoState);
+
+        
+        for (i = 0; i < lastKnownVideoState.length; i++) {
+            
+            if (lastKnownVideoState[i] == "filesave") {
+                document.getElementById("button"+i).innerHTML = "Saving";
+                document.getElementById("button"+i).classList.add("disabled");
+            }
+            else if (lastKnownVideoState[i] == "paused") {
+                document.getElementById("button"+i).innerHTML = "Waiting";
+            }
+            else {
+                document.getElementById("button"+i).innerHTML = "Delete";
+                document.getElementById("button"+i).classList.remove("disabled");
+            }
+        }
+        
+    }
 
     saveWholeVideo = function() { 
         $.ajax({
@@ -922,11 +956,11 @@ $(function() {
                    "totalFrames":"",},
             method: "GET",
             contentType: "application/json",
-            timeout: 10000
+            timeout: 500
         })
         .done(function(data) {
             lastKnownFrameEnd = data.totalFrames;
-            
+
             // Handle Location, Filename & Format
             var fileName = document.getElementById("fileName").value;
     
@@ -977,7 +1011,7 @@ $(function() {
                         data: request,
                         method: "POST",
                         contentType: "application/json",
-                        timeout: 10000
+                        timeout: 500
                     });
                 }
             }
@@ -1066,7 +1100,17 @@ $(function() {
                             "Yes (apply the changed settings)": function() { document.getElementById("popUpBackground").classList.add("hidden"); document.getElementById("resNotAppliedBox").classList.add("hidden"); applyResolution(); },
                             "No (revert to previous settings)": function() { document.getElementById("popUpBackground").classList.add("hidden"); document.getElementById("resNotAppliedBox").classList.add("hidden"); getResolution(); },
 
-                            "Ok":				function() { document.getElementById("popUpBackground").classList.add("hidden"); document.getElementById("errorWhileSavingBox").classList.add("hidden"); document.getElementById("noRecordSegmentModeBox").classList.add("hidden") ; document.getElementById("cantApplyResBox").classList.add("hidden"); },
+                            "Ok":				function() { document.getElementById("popUpBackground").classList.add("hidden"); 
+                                                             document.getElementById("ipNotInputBox").classList.add("hidden");
+                                                             document.getElementById("overwrittenBox").classList.add("hidden");
+                                                             document.getElementById("resNotAppliedBox").classList.add("hidden");
+                                                             document.getElementById("errorWhileSavingBox").classList.add("hidden");
+                                                             document.getElementById("noRecordSegmentModeBox").classList.add("hidden"); 
+                                                             document.getElementById("cantApplyResBox").classList.add("hidden");
+                                                             document.getElementById("netShareResultBox").classList.add("hidden");
+                                                             document.getElementById("videoSavingBox").classList.add("hidden");
+                                                             document.getElementById("afterReferashBox").classList.add("hidden");
+                                                            },
                             }
     dropDownSelect = function(element) {
         if (element.innerText in dropDownFunctions) // if the key-value exists
@@ -1086,6 +1130,7 @@ $(function() {
     // Update webpage for video display
     updateScreen = function() {
         $("#imageDisplay").attr("src", example_camera_addr + "/cgi-bin/screenCap?" + Math.random());
+        getVideoState();
     }
 
     // Cookie
