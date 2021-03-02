@@ -317,17 +317,20 @@ $(function() {
     getResolution = function() {
         $.ajax({
             url: example_camera_addr+"/control/get",
-            data: {"resolution":"",},
+            data: {"resolution":"",
+                   "frameRate":""},
             method: "GET",
             async: false,
             timeout: 500
         })
         .done(function(data){
-            var value = parseFloat(1 / parseFloat(data.resolution.minFrameTime)).toFixed(2);
-            $("#hRes").val(data.resolution.hRes);
-            $("#vRes").val(data.resolution.vRes);
-            $("#fps").val(value);
-            resFRSettingsOnCam = [data.resolution.hRes, data.resolution.vRes, value];
+            document.getElementById("hRes").value = data.resolution.hRes;
+            document.getElementById("vRes").value = data.resolution.vRes;
+            document.getElementById("fps").value = parseFloat(data.frameRate).toFixed(2);
+
+            resFRSettingsOnCam[0] = document.getElementById("hRes").value;
+            resFRSettingsOnCam[1] = document.getElementById("vRes").value;
+            resFRSettingsOnCam[2] = document.getElementById("fps").value;
         });
         return resFRSettingsOnCam;   
     }
@@ -340,25 +343,26 @@ $(function() {
                    "shutterAngle":"",
                    "exposureMin":"",
                    "exposureMax":"",
-                   "framePeriod":"",},
+                   "framePeriod":"",
+                   "minFrameReriod":""},
             method: "GET",
             timeout: 500
         })
         .done(function(data) {
-            if (parseFloat(data.exposurePeriod / 1000).toFixed(1) > 900) {
-                $("#exposureTime").val();
-                $("#exposurePercent").val();
-                $("#exposureDegrees").val();
-            }
             // Exposure Inputs Display
-            $("#exposureTime").val(parseFloat(data.exposurePeriod / 1000).toFixed(1));
-            $("#exposurePercent").val(data.exposurePercent.toFixed(1));
-            $("#exposureDegrees").val(data.shutterAngle.toFixed(1));
+            document.getElementById("exposureTime").value = parseFloat(data.exposurePeriod / 1000).toFixed(1);
+            document.getElementById("exposurePercent").value = parseFloat(data.exposurePeriod / data.exposureMax * 100).toFixed(1);
+            document.getElementById("exposureDegrees").value = parseFloat(data.exposurePeriod / data.framePeriod * 360).toFixed(1);
+
+            document.getElementById("exposureTime").max = (data.exposureMax / 1000).toFixed(1);
             // Shutter Display
             document.getElementById("shutter").min = data.exposureMin;
             document.getElementById("shutter").max = data.exposureMax;
-            var value = Math.sqrt(data.exposurePeriod / data.exposureMax) * data.exposureMax;
-            $("#shutter").val(value);
+            document.getElementById("shutter").value = Math.sqrt(data.exposurePeriod / data.exposureMax) * data.exposureMax;
+            
+
+            fpsBox = document.getElementById("fps");
+            fpsBox.max = parseFloat(1000000000 / parseFloat(data.minFramePeriod)).toFixed(2);
         });
     }
 
@@ -529,18 +533,7 @@ $(function() {
             }
             else if ( (document.getElementById("hRes").validity.valid) && (document.getElementById("vRes").validity.valid) ) {
                 document.getElementById("applyButton").classList.remove("disabled");
-            }
-
-            /*
-            $.ajax({
-                url: example_camera_addr+"/control/getResolutionTimingLimits",
-                data: {"hRes": document.getElementById("hRes").value,
-                       "vRes": document.getElementById("vRes").value},
-                method: "POST",
-                contentType: "application/json",
-                timeout: 10000
-            });	
-            */
+            }            
         });
     }
     
@@ -578,7 +571,7 @@ $(function() {
                     timeout: 500
                 });
             }
-
+            // Set exposure shutter to its new max
             maxShutter();
         }
         else if (document.getElementById("applyButton").classList.contains("disabled")) {
@@ -936,8 +929,6 @@ $(function() {
                 lastKnownVideoState[i] = data.videoState;
             })
         }
-        console.log(lastKnownVideoState);
-
         
         for (i = 0; i < lastKnownVideoState.length; i++) {
             
