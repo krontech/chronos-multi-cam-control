@@ -148,7 +148,7 @@
 </head>
 
 
-<body onclick="">
+<body onclick="" onload="">
     <div class="header">
         <div class="titleImage">
             <img id="logoImage" src="images/Chronos High Speed logo.png">
@@ -210,7 +210,7 @@
             <div id="resolutionBox" class="horizLayout">
                 <b> Resolution </b>
                 <br>
-                <input type="number" id="hRes"/> x <input type="number" id="vRes"/>
+                <input type="number" id="hRes" oninput="checkResValidity()"/> x <input type="number" id="vRes" oninput="checkResValidity()"/>
                 <div class="selectContainerHolder" onclick="">Presets<div id="resolution" class="selectContainer">
                     <a> Unset (Please check camera connection) </a>
                 </div></div>

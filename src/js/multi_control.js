@@ -181,6 +181,7 @@ $(function() {
         
         // Get & display parameters from the first camera on the list
         getResolution();
+        checkResValidity();
         getExposure();
         presetResolutions(); 
         externalStorage();
@@ -482,16 +483,15 @@ $(function() {
 
     // Set Preset Resolution Based on Versions
     presetResolutions = function() {
-        var version = checkVersion();
         var list = document.getElementById("resolution");
         list.innerHTML = "";
 
-        if (version == "1.4") {
+        if (exampleVersion == "1.4") {
             for (i = 0; i < resolutionPresets14.length; i++) {
                 list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets14[i][0] + "x" + resolutionPresets14[i][1] + " @ " + resolutionPresets14[i][2] + "fps </a>";
             }
         }
-        else if (version == "2.1") {
+        else if (exampleVersion == "2.1") {
             for (i = 0; i < resolutionPresets21.length; i++) {
                 list.innerHTML += '<a onclick="usePresetResolution(this)">' + resolutionPresets21[i][0] + "x" + resolutionPresets21[i][1] + " @ " + resolutionPresets21[i][2] + "fps </a>";
             }
@@ -513,12 +513,18 @@ $(function() {
         document.getElementById("vRes").value = pieces[2]; // set the preset vertical resolution
         document.getElementById("fps").value = pieces[4]; // set the preset framerate
         document.getElementById("fps").max = pieces[4];
+        checkResValidity();
     }
 
     // Set Frame Rate to its max value
     getMaxFrameRate = function() {
+        // Frame rate max follows 1.4 when "Mix"
+        if (exampleVersion == "Mix") {
+            var temp_camera_addr = example_camera_addr_14;
+        }
+
         $.ajax({
-            url: example_camera_addr+"/control/get",
+            url: temp_camera_addr+"/control/get",
             data: {"minFramePeriod":""},
             method: "GET",
             timeout: 500
@@ -533,28 +539,66 @@ $(function() {
             }
             else if ( (document.getElementById("hRes").validity.valid) && (document.getElementById("vRes").validity.valid) ) {
                 document.getElementById("applyButton").classList.remove("disabled");
-            }            
+            }
+            
+            $.ajax({
+                url: example_camera_addr+"/control/getResolutionTimingLimits",
+                data: {"hRes": document.getElementById("hRes").value,
+                       "vRes": document.getElementById("vRes").value},
+                method: "POST",
+                contentType: "application/json",
+                timeout: 500,
+                success: function(data) {
+                    console.log(data);
+                }
+            })
+            
         });
+    }
+
+    checkResValidity = function() {
+        // Resolution limitations follow 1.4 when "Mix"
+        if (exampleVersion == "Mix") {
+            var temp_camera_addr = example_camera_addr_14;
+        }
+        
+        $.ajax({
+            url: temp_camera_addr+"/control/get",
+            data: {"sensorHIncrement":"",
+                   "sensorVIncrement":"",
+                   "sensorHMin":"",
+                   "sensorVMin":"",
+                   "sensorHMax":"",
+                   "sensorVMax":""},
+            method: "GET",
+            async: false,
+            timeout: 500
+        })
+        .done(function(data){
+            // Set step, min and max
+            document.getElementById("hRes").step = data.sensorHIncrement;
+            document.getElementById("vRes").step = data.sensorVIncrement;
+            document.getElementById("hRes").min = data.sensorHMin;
+            document.getElementById("vRes").min = data.sensorVMin;
+            document.getElementById("hRes").max = data.sensorHMax;
+            document.getElementById("vRes").max = data.sensorVMax;
+        });
+        if ( (hRes.validity.valid) && (vRes.validity.valid) ) {
+            if (document.getElementById("fps").validity.valid) {
+                document.getElementById("applyButton").classList.remove("disabled");
+            }
+        }
+        else {
+            document.getElementById("applyButton").classList.add("disabled");
+        }
     }
     
     // Apply Resolution & Frame Rate
     applyResolution = function() {
-        var version = checkVersion();
         var hRes = document.getElementById("hRes");
         var vRes = document.getElementById("vRes");
-        var hOff;
-        var vOff;
 
-        if (version == "1.4" || version == "Mix") {
-            hOff = (resolutionPresets14[0][0] - document.getElementById("hRes").value) / 2;
-            vOff = (resolutionPresets14[0][1] - document.getElementById("vRes").value) / 2;
-        }
-        else {
-            hOff = (resolutionPresets21[0][0] - document.getElementById("hRes").value) / 2;
-            vOff = (resolutionPresets21[0][1] - document.getElementById("vRes").value) / 2;
-        }
-
-        if ( (hRes.validity.valid) && (vRes.validity.valid) && (hOff >= 0) && (vOff >= 0) && (document.getElementById("fps").validity.valid) && (!document.getElementById("applyButton").classList.contains("disabled")) ) {
+        if ( (hRes.validity.valid) && (vRes.validity.valid) && (document.getElementById("fps").validity.valid) && (!document.getElementById("applyButton").classList.contains("disabled")) ) {
             var parameters = '{"resolution": {"hRes": ' + document.getElementById("hRes").value;
             parameters += ', "vRes": ' + document.getElementById("vRes").value;
             parameters += '}, "framePeriod": ' + Math.round(parseFloat( 1 / document.getElementById("fps").value * 1000000000 ));
