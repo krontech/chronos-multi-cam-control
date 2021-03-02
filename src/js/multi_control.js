@@ -16,6 +16,7 @@ $(function() {
     var saveDevices = [];            // array to store external save devices that all camera have
     var invalidIp = [];              // array to store IPs that are invalid
     var disconIp = [];               // array to atore IPs that are disconnected with cameras
+    var indexSelect = 0;             // index for the display camera IP
 
     /* Get & Display Cameras' IP & Information */
     // Check IP Format
@@ -151,7 +152,8 @@ $(function() {
             list.innerHTML += "IP addresses connected successfully:<br>";
             for (i = 0; i < ipDisplay.length; i++) {
                 list.innerHTML += '<li id="ipAddress'+ i +'" style="list-style-type:none;">' + '<span>' + ipDisplay[i] + camInfo[i] + '</span>' + 
-                                  '<button type="button" class="delButton" id= "button'+ i +'" onclick="deleteIp(this)">Delete</button></li>';
+                                  '<button type="button" class="delButton" id= "button'+ i +'" onclick="deleteIp(this)">Delete</button>' +
+                                  '<button type="button" class="delButton" id= "selector'+ i +'" onclick="SelectIp(this)">Select</button></li>';
             }
         }
         // Display IPs that are invalid or disconnected
@@ -167,6 +169,7 @@ $(function() {
 
         // IP address for parameters display
         example_camera_addr = ipArray[0];
+        document.getElementById("selector0").classList.add("disabled");
 
         exampleVersion = checkVersion();
         if (exampleVersion == "Mix") {
@@ -196,6 +199,22 @@ $(function() {
         camInfo.splice(index, 1);
         camVersion.splice(index, 1);
         camSerial.splice(index, 1);
+    }
+
+    // Select IP for display
+    SelectIp = function(element) {
+        var index = element.id.replace("selector", "");
+        example_camera_addr = ipArray[index];
+
+        document.getElementById("selector"+indexSelect).classList.remove("disabled");
+        
+        indexSelect = index;
+        document.getElementById("selector"+indexSelect).classList.add("disabled");
+
+        updateScreen();
+        getResolution();
+        getExposure();
+
     }
 
     // Clear IP
@@ -296,10 +315,6 @@ $(function() {
     /* Get Parameters from First Camera in IP List */
     // Resolution Box
     getResolution = function() {
-        if (exampleVersion == "Mix") {
-            example_camera_addr = example_camera_addr_14;
-        }
-
         $.ajax({
             url: example_camera_addr+"/control/get",
             data: {"resolution":"",},
@@ -318,10 +333,6 @@ $(function() {
     }
     // Exposure Box
     getExposure = function() {
-        if (exampleVersion == "Mix") {
-            example_camera_addr = example_camera_addr_21;
-        }
-
         $.ajax({
             url: example_camera_addr+"/control/get",
             data: {"exposurePeriod":"",
@@ -502,10 +513,6 @@ $(function() {
 
     // Set Frame Rate to its max value
     getMaxFrameRate = function() {
-        if (exampleVersion == "Mix") {
-            example_camera_addr = example_camera_addr_14;
-        }
-
         $.ajax({
             url: example_camera_addr+"/control/get",
             data: {"minFramePeriod":""},
