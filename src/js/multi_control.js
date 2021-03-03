@@ -214,6 +214,7 @@ $(function() {
 
         updateScreen();
         getResolution();
+        checkResValidity();
         getExposure();
 
     }
@@ -337,8 +338,17 @@ $(function() {
     }
     // Exposure Box
     getExposure = function() {
+        // Exposure follows 2.1 when "Mix"
+        var temp_camera_addr = "";
+        if (exampleVersion == "Mix") {
+            temp_camera_addr = example_camera_addr_21;
+        }
+        if (temp_camera_addr == "") {
+            temp_camera_addr = example_camera_addr;
+        }
+
         $.ajax({
-            url: example_camera_addr+"/control/get",
+            url: temp_camera_addr+"/control/get",
             data: {"exposurePeriod":"",
                    "exposurePercent":"",
                    "shutterAngle":"",
@@ -519,12 +529,17 @@ $(function() {
     // Set Frame Rate to its max value
     getMaxFrameRate = function() {
         // Frame rate max follows 1.4 when "Mix"
+        var temp_camera_addr = "";
         if (exampleVersion == "Mix") {
-            var temp_camera_addr = example_camera_addr_14;
+            temp_camera_addr = example_camera_addr_14;
+        }
+
+        if (temp_camera_addr == "") {
+            temp_camera_addr = example_camera_addr;
         }
 
         $.ajax({
-            url: temp_camera_addr+"/control/get",
+            url: example_camera_addr+"/control/get",
             data: {"minFramePeriod":""},
             method: "GET",
             timeout: 500
@@ -541,6 +556,7 @@ $(function() {
                 document.getElementById("applyButton").classList.remove("disabled");
             }
             
+            /*
             $.ajax({
                 url: example_camera_addr+"/control/getResolutionTimingLimits",
                 data: {"hRes": document.getElementById("hRes").value,
@@ -552,18 +568,23 @@ $(function() {
                     console.log(data);
                 }
             })
-            
+            */
         });
     }
 
     checkResValidity = function() {
         // Resolution limitations follow 1.4 when "Mix"
+        var temp_camera_addr = "";
         if (exampleVersion == "Mix") {
-            var temp_camera_addr = example_camera_addr_14;
+            temp_camera_addr = example_camera_addr_14;
+        }
+
+        if (temp_camera_addr == "") {
+            temp_camera_addr = example_camera_addr;
         }
         
         $.ajax({
-            url: temp_camera_addr+"/control/get",
+            url: example_camera_addr+"/control/get",
             data: {"sensorHIncrement":"",
                    "sensorVIncrement":"",
                    "sensorHMin":"",
@@ -791,6 +812,7 @@ $(function() {
             
     // Add External Storage Device in Location Container
     findexternalStorage = function() {
+        camStorage = [];
         for (i = 0; i < ipArray.length; i++) {
             $.ajax({
                 url: ipArray[i]+"/control/get",
@@ -820,6 +842,7 @@ $(function() {
         var sdNumber = 0;
         var smbNumber = 0;
         var nfsNumber = 0;
+        saveDevices = [];
 
         // Check Devices
         for (i = 0; i < camStorage.length; i++) {
@@ -854,7 +877,6 @@ $(function() {
             saveDevices.push("mmcblk1p1");
         }
 
-        // Only allow to use SMB & NFS to save
         $.ajax({
             url: example_camera_addr+"/control/get",
             data: {"externalStorage":""},
@@ -909,8 +931,9 @@ $(function() {
 
             var list = document.getElementById("storageLocationInner");
 
-            if (StorageInfo.size > 0)
+            if (StorageInfo.size > 0 && saveDevices.length > 0)
             {
+                console.log("Has save devices")
                 list.innerHTML = "";
                 for (key in StorageInfo)
                 {
@@ -944,7 +967,7 @@ $(function() {
             }
             else
             {
-                document.getElementById(StorageLocation).firstChild.textContent = "Location";
+                document.getElementById("storageLocation").firstChild.textContent = "Location";
                 list.innerHTML = '<a>No Storage Connected</a>';
 
                 document.getElementById("saveVideoButton").classList.add("disabled");
@@ -1056,6 +1079,7 @@ $(function() {
                         timeout: 500
                     });
                 }
+                setInterval(getVideoState, 500);
             }
             else {
                 if (StorageLocation == "")
@@ -1172,7 +1196,6 @@ $(function() {
     // Update webpage for video display
     updateScreen = function() {
         $("#imageDisplay").attr("src", example_camera_addr + "/cgi-bin/screenCap?" + Math.random());
-        getVideoState();
     }
 
     // Cookie
