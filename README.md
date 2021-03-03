@@ -1,24 +1,24 @@
 # Chronos-Multi-Cam-Control Webpage
-The multiple camera control web interface gives Chronos users the freedom to control multiple cameras over ethernet network at the same time. Users can start/stop video recording, set resolution, frame rate, exposure, establish network storage (SMB/NFS) and save videos to different locations or formats (H.264, CinemaDNG, TIFF, and TIFF RAW). To install this interface, users can clone or download this Github repository and access the web interface through opening the main.html file in the directory on their web browser. 
+The multiple camera control web interface gives Chronos users the freedom to control multiple cameras over ethernet network at the same time. Users can start/stop video recording, set resolution, frame rate, exposure, establish network storage (SMB/NFS) and save videos to different locations or formats (H.264, CinemaDNG, TIFF, and TIFF RAW). To install this interface, users can clone or download this Github repository and access the web interface through opening the main.html file in the src directory on their web browser. 
 
 ![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
 
 ## Setup Guides
 For information on "How to setup a Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
-<b> Note: Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". </b> Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, users would require to connect through ethernet network. Please consult with your IT Department, if you experience network connectivity issue as most organizations have firewalls set in place.
+<b> Note: Chronos cameras connected through USB will have a fixed IP address of "192.168.12.1". </b> Therefore, only one camera can be connected through USB. In order to have multiple cameras connected, users would require to connect through ethernet network. Please consult with your IT Department, if you experience network connectivity issues as most organizations have firewalls set in place.
 
 For more information on "How to Setup Chronos camera with SMB Network", refer to the SMB Share Setup Guide. https://www.krontech.ca/wp-content/uploads/2020/07/Chronos-SMB-Share-Setup-Guide.pdf 
 
-Perform Black Calibration, when the record settings are changed. For more info refer to the user manual. https://www.krontech.ca/wp-content/uploads/2021/02/Chronos-1.4-and-2.1-User-Manual-Software-Version-0.6.0.pdf#page=15
+Perform Black Calibration when the record settings are changed. For more info refer to the user manual. https://www.krontech.ca/wp-content/uploads/2021/02/Chronos-1.4-and-2.1-User-Manual-Software-Version-0.6.0.pdf#page=15
 
 
 ## IP Addresses Input
 
 Input all Chronos cameras IP addresses in the text box under *Camera IP Address* section, separated by comma or dash. 
 
-Press *Confirm* button to verify the IP addresses and establish connection. Invalid and disconnected IP addresses will be removed to continue. A pop-up window will appear to warn users if any IP addresses need to be removed before proceeding. 
+Press *Confirm* button to verify the IP addresses and establish connection. Invalid and disconnected IP addresses will appear below the list of connected Chronos cameras.
 
-All valid and connected cameras will be listed below the text area in *IP Address - Chronos Version, Color Pattern, Memory Size, Serial Number* format. A *delete* button will show behind each IP address for users to remove a camera from the webpage. 
+All valid and connected cameras will be listed below the text area in *IP Address - Chronos Version, Color Pattern, Memory Size, Serial Number* format. The *Delete* button  beside each connected camera will allow users to remove that camera from the webpage. This button is disabled and replaced by *Saving* when saving footage is in progress. *Saving* button indicates a footage is being saved to the camera and prevents users from removing a camera until saving is complete. Users can press the *Select* button beside each connected camera to display it's screen and record settings.
 
 IP addresses input in the text box will remain after page refresh, but users need to click *Confirm* button again to establish connection again.
 
