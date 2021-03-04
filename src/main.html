@@ -14,17 +14,18 @@
 <script>
     window.onload = function() {
         if (window.sessionStorage) {
-            var list = window.sessionStorage.getItem("ipList");
-            var input = window.sessionStorage.getItem("ipAddressArea");
+            if (window.sessionStorage.length > 0) {
+                var list = window.sessionStorage.getItem("ipList");
+                var input = window.sessionStorage.getItem("ipAddressArea");
+                
+                if (list != "" || list != null) {
+                    document.getElementById("ipList").innerHTML = list;
+                }
+                if (input != "" || input != null) {
+                    document.getElementById("ipAddressArea").innerHTML = input;
+                }
+            }
             
-            if (list != "" || list != null) {
-                document.getElementById("ipList").innerHTML = list;
-                //document.getElementById("popUpBackground").classList.remove("hidden");
-                //document.getElementById("afterReferashBox").classList.remove("hidden");
-            }
-            if (input != "" || input != null) {
-                document.getElementById("ipAddressArea").innerHTML = input;
-            }
         }
     }
 </script>
@@ -148,7 +149,7 @@
 </head>
 
 
-<body onclick="" onload="">
+<body onclick="">
     <div class="header">
         <div class="titleImage">
             <img id="logoImage" src="images/Chronos High Speed logo.png">
@@ -331,12 +332,6 @@
 
             <div id="videoSavingBox" class="horizLayout hidden">
                 Wait for Saving to start...
-                <br>
-                <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
-            </div>
-
-            <div id="afterReferashBox" class="horizLayout hidden">
-                Please click "Confirm" button to re-connect all cameras.
                 <br>
                 <a style="float: right;" class="button" onclick="dropDownSelect(this)">Ok</a>
             </div>

@@ -1175,7 +1175,6 @@ $(function() {
                                                              document.getElementById("cantApplyResBox").classList.add("hidden");
                                                              document.getElementById("netShareResultBox").classList.add("hidden");
                                                              document.getElementById("videoSavingBox").classList.add("hidden");
-                                                             document.getElementById("afterReferashBox").classList.add("hidden");
                                                             },
                             }
     dropDownSelect = function(element) {
