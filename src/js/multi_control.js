@@ -1050,6 +1050,23 @@ $(function() {
                         break ;
                 
                 }
+
+                var maxBitRate = document.getElementById("maxBitRateNum").value * 1000000;
+                var bitRate = document.getElementById("bitsPerPixelNum").value ; // start with the bits per pixel
+
+                if ( (resFRSettingsOnCam[0] != null) && (resFRSettingsOnCam[1] != null) ) {
+
+                    bitRate *= resFRSettingsOnCam[0] * resFRSettingsOnCam[1]; // multiply by the resolution
+                    bitRate *= document.getElementById("saveFPSNum").value;   // multiply by the framerate
+
+                    if (maxBitRate < bitRate)
+                        bitRate = maxBitRate; // correct to always be below the maximum
+
+                    request += ', "bitrate": ' + Math.floor(bitRate) ; // add the bitrate to the request
+                }
+
+                request += ', "framerate": ' + document.getElementById("saveFPSNum").value ; // add the framerate to te request
+
                 var tmp = request;
 
                 // Get system time to generate filename automatically
@@ -1128,7 +1145,7 @@ $(function() {
         }
     }
 
-    // Check value (< max)
+    // Check value (min < value < max)
     boundInput = function(element){
         if (parseInt(element.value) > parseInt(element.max)){
             element.value = element.max;
@@ -1234,4 +1251,5 @@ $(function() {
 
     // Update Video Screenshot
     setInterval(updateScreen, 500);
+    
 });
