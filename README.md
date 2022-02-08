@@ -42,9 +42,9 @@ Videos will be saved as *vid_YYYY-MM-DD_HH-MM-SS_SerialNumber* if users choose t
 
 ### Video Settings
 
-Settings for H.264(mp4) videos. 
+Settings for H.264(mp4) videos are in *Video Settings* Section. 
 
-Videos in H.264 format will be saved based on the video framerate, bits per pixel and max bitrate that are set and displayed on the multi-cam control webpage instead settings on camera GUI.
+Videos in H.264 format will be saved based on the video framerate, bits per pixel and max bitrate that are set and displayed on the multi-cam control webpage instead of  settings on camera GUI. Every video will be in the same settings.
 
 
 ## Screenshot and Parameter Display
