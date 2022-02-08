@@ -1,7 +1,7 @@
 # Chronos-Multi-Cam-Control Webpage
 The multiple camera control web interface gives Chronos users the freedom to control multiple cameras over ethernet network at the same time. Users can start/stop video recording, set resolution, frame rate, exposure, establish network storage (SMB/NFS) and save videos to different locations or formats (H.264, CinemaDNG, TIFF, and TIFF RAW). To install this interface, users can clone or download this Github repository and access the web interface through opening the main.html file in the src directory on their web browser. 
 
-![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/whole_screen.png)
+![image](https://github.com/krontech/chronos-multi-cam-control/blob/master/screenshots/newWholeWeb-video-framerate.png)
 
 ## Setup Guides
 For information on "How to setup a Chronos camera to the Network", refer to the Network Setup guide https://www.krontech.ca/wp-content/uploads/2020/03/Network-Control-v0.6.5.pdf
